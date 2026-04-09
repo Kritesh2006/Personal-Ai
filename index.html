@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARIA — Advanced Responsive Intelligent Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════
+       STARTUP SCREEN
+  ═══════════════════════════════════════ -->
+  <div id="startup-screen">
+    <!-- Scan line overlay -->
+    <div class="scan-overlay"></div>
+    <!-- Particle canvas -->
+    <canvas id="startup-canvas"></canvas>
+
+    <!-- HUD corners -->
+    <div class="hud-corner hud-tl"></div>
+    <div class="hud-corner hud-tr"></div>
+    <div class="hud-corner hud-bl"></div>
+    <div class="hud-corner hud-br"></div>
+
+    <!-- HUD data overlays -->
+    <div class="hud-label hud-label-tl">SYS::BOOT_v4.7.2</div>
+    <div class="hud-label hud-label-tr" id="startup-clock">00:00:00</div>
+    <div class="hud-label hud-label-bl">NEURAL_CORE::ONLINE</div>
+    <div class="hud-label hud-label-br">OWNER::K.DHUNGEL</div>
+
+    <!-- Center content -->
+    <div class="startup-center">
+      <!-- Rotating rings -->
+      <div class="ring-system">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <div class="ring ring-4"></div>
+        <div class="ring-radar"></div>
+        <!-- Core orb -->
+        <div class="core-orb">
+          <div class="core-inner">
+            <div class="core-pulse"></div>
+            <span class="core-symbol">◎</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Title block -->
+      <div class="startup-title-block">
+        <div class="startup-pre-label">INITIALIZING SYSTEM</div>
+        <h1 class="aria-title">ARIA</h1>
+        <div class="aria-fullform">Advanced Responsive Intelligent Assistant</div>
+        <div class="aria-owner">OWNER PROFILE: <span>KRITESH DHUNGEL</span></div>
+      </div>
+
+      <!-- Boot sequence log -->
+      <div class="boot-log" id="boot-log">
+        <div class="boot-line" style="animation-delay:0.5s">[ OK ] Neural core loaded</div>
+        <div class="boot-line" style="animation-delay:1.0s">[ OK ] Voice synthesis ready</div>
+        <div class="boot-line" style="animation-delay:1.5s">[ OK ] Memory banks initialized</div>
+        <div class="boot-line" style="animation-delay:2.0s">[ OK ] Command layer active</div>
+        <div class="boot-line" style="animation-delay:2.5s">[ OK ] Interface calibrated</div>
+        <div class="boot-line highlight" style="animation-delay:3.0s">[ ARIA ] System ready — awaiting authorization</div>
+      </div>
+
+      <!-- Enter button -->
+      <button class="enter-btn" id="enter-btn" onclick="enterSystem()">
+        <span class="enter-btn-text">INITIALIZE ARIA</span>
+        <span class="enter-btn-glow"></span>
+      </button>
+
+      <!-- Progress bar -->
+      <div class="boot-progress">
+        <div class="boot-progress-fill" id="boot-progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       MAIN DASHBOARD
+  ═══════════════════════════════════════ -->
+  <div id="dashboard" class="hidden">
+    <!-- Animated background -->
+    <canvas id="dash-canvas"></canvas>
+    <div class="dash-grid-overlay"></div>
+    <div class="scan-line-dash"></div>
+
+    <!-- HUD frame corners -->
+    <div class="dash-hud-corner dash-tl"></div>
+    <div class="dash-hud-corner dash-tr"></div>
+    <div class="dash-hud-corner dash-bl"></div>
+    <div class="dash-hud-corner dash-br"></div>
+
+    <!-- ── TOP BAR ── -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">
+          <span class="logo-ring"></span>
+          <span class="logo-text">ARIA</span>
+        </div>
+        <div class="topbar-sys-info">
+          <span class="sys-tag">SYS ACTIVE</span>
+          <span class="sys-model">NEURAL v4.7</span>
+        </div>
+      </div>
+      <div class="topbar-center">
+        <div class="greeting" id="greeting">Good morning, Kritesh.</div>
+        <div class="topbar-datetime" id="topbar-datetime">--:-- · ---</div>
+      </div>
+      <div class="topbar-right">
+        <button class="hud-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
+        <button class="hud-btn" id="voice-toggle-btn" onclick="toggleVoice()" title="Toggle Voice">◉</button>
+        <button class="hud-btn" onclick="toggleAmbient()" title="Ambient Mode">◈</button>
+        <div class="status-dot active" id="status-dot" title="System Online"></div>
+      </div>
+    </header>
+
+    <!-- ── MAIN GRID ── -->
+    <main class="dash-grid">
+
+      <!-- LEFT COLUMN -->
+      <aside class="panel-col left-col">
+
+        <!-- AI Core Panel -->
+        <div class="panel core-panel" id="core-panel">
+          <div class="panel-header">
+            <span class="panel-title">AI CORE</span>
+            <span class="panel-badge">ACTIVE</span>
+          </div>
+          <div class="core-visual" id="core-visual">
+            <div class="dash-ring-system">
+              <div class="d-ring d-ring-1" id="d-ring-1"></div>
+              <div class="d-ring d-ring-2" id="d-ring-2"></div>
+              <div class="d-ring d-ring-3" id="d-ring-3"></div>
+              <div class="dash-core-orb" id="dash-core-orb">
+                <div class="dash-core-pulse"></div>
+                <div class="dash-core-symbol" id="dash-core-symbol">◎</div>
+              </div>
+            </div>
+            <!-- Waveform -->
+            <div class="waveform" id="waveform">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="ai-state-label" id="ai-state-label">STANDBY</div>
+        </div>
+
+        <!-- System Metrics Panel -->
+        <div class="panel metrics-panel">
+          <div class="panel-header">
+            <span class="panel-title">DIAGNOSTICS</span>
+            <span class="panel-badge pulse-badge">LIVE</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">NEURAL LOAD</span>
+            <div class="metric-bar"><div class="metric-fill" style="width:67%;background:var(--cyan)"></div></div>
+            <span class="metric-val">67%</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">RESPONSE LAT</span>
+            <div class="metric-bar"><div class="metric-fill" style="width:12%;background:var(--green)"></div></div>
+            <span class="metric-val">12ms</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">MEMORY UTIL</span>
+            <div class="metric-bar"><div class="metric-fill" style="width:43%;background:var(--purple)"></div></div>
+            <span class="metric-val">43%</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">VOICE SYNTH</span>
+            <div class="metric-bar"><div class="metric-fill" style="width:88%;background:var(--blue)"></div></div>
+            <span class="metric-val">READY</span>
+          </div>
+        </div>
+
+        <!-- Quick Launch -->
+        <div class="panel quick-launch-panel">
+          <div class="panel-header">
+            <span class="panel-title">QUICK LAUNCH</span>
+          </div>
+          <div class="ql-grid">
+            <button class="ql-btn" onclick="runCommand('open youtube')">▶ YouTube</button>
+            <button class="ql-btn" onclick="runCommand('open google')">◉ Google</button>
+            <button class="ql-btn" onclick="runCommand('open chatgpt')">⬡ ChatGPT</button>
+            <button class="ql-btn" onclick="runCommand('open gmail')">✉ Gmail</button>
+            <button class="ql-btn" onclick="runCommand('open spotify')">♫ Spotify</button>
+            <button class="ql-btn" onclick="runCommand('open github')">⌥ GitHub</button>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- CENTER COLUMN — CHAT -->
+      <section class="panel-col center-col">
+        <div class="panel chat-panel">
+          <div class="panel-header chat-panel-header">
+            <span class="panel-title">COMMUNICATION CORE</span>
+            <div class="chat-header-actions">
+              <button class="micro-btn" id="mic-btn" onclick="toggleMic()" title="Voice Input">🎤</button>
+              <button class="micro-btn" onclick="clearChat()" title="Clear Chat">⌫</button>
+            </div>
+          </div>
+
+          <!-- Messages -->
+          <div class="chat-messages" id="chat-messages">
+            <div class="msg aria-msg">
+              <div class="msg-avatar">◎</div>
+              <div class="msg-content">
+                <div class="msg-name">ARIA</div>
+                <div class="msg-bubble">
+                  Online and fully operational. I'm ARIA — your personal AI assistant. How can I help you today, Kritesh?
+                </div>
+                <div class="msg-time" id="initial-time">--:--</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Voice state bar -->
+          <div class="voice-state-bar" id="voice-state-bar">
+            <div class="vsb-orb" id="vsb-orb"></div>
+            <span id="vsb-text">Press mic to speak</span>
+          </div>
+
+          <!-- Input -->
+          <div class="chat-input-row">
+            <input
+              type="text"
+              id="chat-input"
+              class="chat-input"
+              placeholder="Enter message or command…"
+              autocomplete="off"
+              onkeydown="handleInputKey(event)"
+            />
+            <button class="send-btn" onclick="sendMessage()" title="Send">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN -->
+      <aside class="panel-col right-col">
+
+        <!-- Commands Panel -->
+        <div class="panel commands-panel">
+          <div class="panel-header">
+            <span class="panel-title">COMMAND LEXICON</span>
+          </div>
+          <div class="cmd-list">
+            <div class="cmd-item" onclick="injectCommand('what time is it')"><span class="cmd-key">⌘</span> What time is it</div>
+            <div class="cmd-item" onclick="injectCommand('what is today\'s date')"><span class="cmd-key">⌘</span> Today's date</div>
+            <div class="cmd-item" onclick="injectCommand('open youtube')"><span class="cmd-key">⌘</span> Open YouTube</div>
+            <div class="cmd-item" onclick="injectCommand('open google')"><span class="cmd-key">⌘</span> Open Google</div>
+            <div class="cmd-item" onclick="injectCommand('open chatgpt')"><span class="cmd-key">⌘</span> Open ChatGPT</div>
+            <div class="cmd-item" onclick="injectCommand('clear chat')"><span class="cmd-key">⌘</span> Clear chat</div>
+            <div class="cmd-item" onclick="injectCommand('toggle voice')"><span class="cmd-key">⌘</span> Toggle voice</div>
+            <div class="cmd-item" onclick="injectCommand('enter fullscreen')"><span class="cmd-key">⌘</span> Fullscreen</div>
+            <div class="cmd-item" onclick="injectCommand('show settings')"><span class="cmd-key">⌘</span> Show settings</div>
+          </div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="panel settings-panel" id="settings-panel">
+          <div class="panel-header">
+            <span class="panel-title">SYSTEM CONFIG</span>
+            <span class="panel-badge">v4.7</span>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Voice Output</span>
+            <div class="toggle" id="toggle-voice" onclick="toggleSetting('voice')" data-on="true">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Animations</span>
+            <div class="toggle on" id="toggle-anim" onclick="toggleSetting('anim')" data-on="true">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Ambient Mode</span>
+            <div class="toggle" id="toggle-ambient" onclick="toggleSetting('ambient')" data-on="false">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Scan Lines</span>
+            <div class="toggle on" id="toggle-scan" onclick="toggleSetting('scan')" data-on="true">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">HUD Intensity</span>
+            <input type="range" class="hud-slider" min="0" max="100" value="70" oninput="setHUDIntensity(this.value)" />
+          </div>
+          <div class="owner-card">
+            <div class="owner-avatar">KD</div>
+            <div class="owner-info">
+              <div class="owner-name">Kritesh Dhungel</div>
+              <div class="owner-role">SYSTEM OWNER · FULL ACCESS</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat History -->
+        <div class="panel history-panel">
+          <div class="panel-header">
+            <span class="panel-title">SESSION LOG</span>
+            <span class="panel-badge" id="msg-count-badge">1 MSG</span>
+          </div>
+          <div class="history-list" id="history-list">
+            <div class="history-item active">Session 001 — Current</div>
+          </div>
+        </div>
+
+      </aside>
+    </main>
+
+    <!-- ── BOTTOM STATUS BAR ── -->
+    <footer class="status-bar">
+      <span class="sb-item">ARIA SYS v4.7.2</span>
+      <span class="sb-sep">|</span>
+      <span class="sb-item">OWNER: K.DHUNGEL</span>
+      <span class="sb-sep">|</span>
+      <span class="sb-item" id="sb-voice-status">VOICE: STANDBY</span>
+      <span class="sb-sep">|</span>
+      <span class="sb-item" id="sb-msg-count">MSGS: 1</span>
+      <span class="sb-sep">|</span>
+      <span class="sb-item" id="sb-time">--:--:--</span>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
