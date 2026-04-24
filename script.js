@@ -181,7 +181,7 @@ const CONFIG = {
   ai: {
     // Active single provider: 'ollama' | 'gemini' | 'claude' | 'auto'
     // 'auto' tries each enabled provider in order
-    activeProvider: 'ollama',
+    activeProvider: 'gemeni',
 
     providers: {
       ollama: {
@@ -195,18 +195,17 @@ const CONFIG = {
         apiKey:   '',            // No key needed
         available: false,        // Set at runtime by connection check
       },
-      gemini: {
-        name:     'Gemini Flash',
-        enabled:  false,
-        free:     true,
-        // gemini-1.5-flash is FREE: 15 req/min, 1M tokens/day
-        endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent',
-        model:    'gemini-1.5-flash',
-        color:    '#4285f4',
-        icon:     '◈',
-        apiKey:   '',            // aistudio.google.com → Get API Key
-        available: false,
-      },
+     gemini: {
+  name:     'Gemini Flash',
+  enabled:  true,
+  free:     true,
+  endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+  model:    'gemini-2.0-flash',
+  color:    '#4285f4',
+  icon:     '◈',
+  apiKey:   '', // leave empty if using settings panel
+  available: false,
+},
       claude: {
         name:     'Claude Haiku',
         enabled:  false,
