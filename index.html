@@ -3,542 +3,366 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ARIA — Autonomous Reasoning & Intelligence Assistant</title>
+  <title>ARIA — Autonomous Reasoning & Intelligent AI Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@200;300;400;500;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- ============================================================
-     SCREEN 1: BOOT
-     ============================================================ -->
+<!-- ══════════════════════════════════════════════════════
+     SCREEN: BOOT
+     ══════════════════════════════════════════════════════ -->
 <div id="screen-boot" class="screen active">
-  <div class="boot-container">
-    <div class="boot-hex-wrap">
-      <svg class="boot-hex" viewBox="0 0 200 200">
-        <polygon class="hex-outer" points="100,5 185,50 185,150 100,195 15,150 15,50"/>
-        <polygon class="hex-mid"   points="100,18 172,57 172,143 100,182 28,143 28,57"/>
-        <polygon class="hex-inner" points="100,32 160,65 160,135 100,168 40,135 40,65"/>
-        <text x="100" y="115" text-anchor="middle" class="hex-letter">A</text>
+  <div class="boot-wrap">
+    <!-- Animated hex logo -->
+    <div class="boot-hex-container">
+      <svg class="boot-hex-svg" viewBox="0 0 240 240" fill="none">
+        <!-- Outer rotating ring -->
+        <circle cx="120" cy="120" r="108" stroke="var(--blue)" stroke-width="0.5" stroke-dasharray="4 8" class="ring-spin-slow"/>
+        <!-- Hex polygon layers -->
+        <polygon points="120,8 210,57 210,183 120,232 30,183 30,57"
+          stroke="var(--blue)" stroke-width="1" fill="none" opacity="0.3"/>
+        <polygon points="120,22 196,66 196,174 120,218 44,174 44,66"
+          stroke="var(--blue-bright)" stroke-width="1.5" fill="none" opacity="0.5"/>
+        <polygon points="120,40 178,75 178,165 120,200 62,165 62,75"
+          stroke="var(--blue-bright)" stroke-width="1" fill="var(--blue-subtle)" class="hex-pulse"/>
+        <!-- Inner glow circle -->
+        <circle cx="120" cy="120" r="52" fill="var(--blue-subtle)" stroke="var(--blue-bright)" stroke-width="1"/>
+        <!-- ARIA letter -->
+        <text x="120" y="136" text-anchor="middle"
+          font-family="Exo 2" font-weight="900" font-size="48" fill="var(--blue-bright)"
+          class="hex-glow-text">A</text>
       </svg>
-      <div class="boot-scan-ring"></div>
+      <!-- Scan line -->
+      <div class="scan-line"></div>
     </div>
 
-    <div class="boot-title">
-      <span class="boot-title-main">ARIA</span>
-      <span class="boot-title-sub">Autonomous Reasoning &amp; Intelligence Assistant</span>
+    <div class="boot-title-block">
+      <div class="boot-main-title">ARIA</div>
+      <div class="boot-sub-title">Autonomous Reasoning &amp; Intelligent AI Assistant</div>
     </div>
 
-    <div class="boot-log" id="boot-log">
-      <div class="boot-log-line active" id="blog-0">&#9632; Initializing ARIA core systems…</div>
-      <div class="boot-log-line" id="blog-1">&#9632; Loading neural reasoning engine…</div>
-      <div class="boot-log-line" id="blog-2">&#9632; Checking server connectivity…</div>
-      <div class="boot-log-line" id="blog-3">&#9632; Voice module online…</div>
-      <div class="boot-log-line" id="blog-4">&#9632; Automation core ready…</div>
-      <div class="boot-log-line" id="blog-5">&#9632; ARIA online. Welcome back.</div>
+    <div class="boot-log-panel" id="boot-log">
+      <div class="log-line" id="bl-0">▸ Initializing ARIA core intelligence…</div>
+      <div class="log-line" id="bl-1">▸ Loading multi-model debate engine…</div>
+      <div class="log-line" id="bl-2">▸ Verifying backend connection…</div>
+      <div class="log-line" id="bl-3">▸ Strategic analysis modules ready…</div>
+      <div class="log-line" id="bl-4">▸ ARIA online. Awaiting access credentials.</div>
     </div>
 
-    <div class="boot-progress-wrap">
-      <div class="boot-progress-bar" id="boot-bar"></div>
+    <div class="boot-progress-outer">
+      <div class="boot-progress-inner" id="boot-bar"></div>
     </div>
     <div class="boot-pct" id="boot-pct">0%</div>
   </div>
 </div>
 
-<!-- ============================================================
-     SCREEN 2: ACCESS GATE (PIN)
-     ============================================================ -->
+<!-- ══════════════════════════════════════════════════════
+     SCREEN: ACCESS GATE
+     ══════════════════════════════════════════════════════ -->
 <div id="screen-access" class="screen">
-  <div class="access-container">
-    <div class="access-logo">
-      <svg viewBox="0 0 80 80" width="64" height="64">
-        <polygon points="40,3 75,21 75,59 40,77 5,59 5,21" fill="none" stroke="var(--red)" stroke-width="2"/>
-        <text x="40" y="50" text-anchor="middle" font-family="Orbitron" font-weight="900" font-size="24" fill="var(--red)">A</text>
-      </svg>
-      <span class="access-name">ARIA</span>
-    </div>
-    <h2 class="access-title">SECURE ACCESS</h2>
-    <p class="access-sub">Enter your access PIN to continue</p>
+  <div class="access-outer">
+    <!-- Corner decorators -->
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
 
-    <div class="pin-display" id="pin-display">
-      <span class="pin-dot" id="pd0"></span>
-      <span class="pin-dot" id="pd1"></span>
-      <span class="pin-dot" id="pd2"></span>
-      <span class="pin-dot" id="pd3"></span>
-    </div>
+    <div class="access-inner">
+      <div class="access-logo-row">
+        <svg viewBox="0 0 56 56" width="44" height="44">
+          <polygon points="28,3 51,15 51,41 28,53 5,41 5,15" fill="none" stroke="var(--blue-bright)" stroke-width="1.5"/>
+          <text x="28" y="36" text-anchor="middle" font-family="Exo 2" font-weight="900" font-size="20" fill="var(--blue-bright)">A</text>
+        </svg>
+        <span class="access-aria-name">ARIA</span>
+      </div>
 
-    <div class="pin-pad">
-      <button class="pin-key" data-val="1">1</button>
-      <button class="pin-key" data-val="2">2</button>
-      <button class="pin-key" data-val="3">3</button>
-      <button class="pin-key" data-val="4">4</button>
-      <button class="pin-key" data-val="5">5</button>
-      <button class="pin-key" data-val="6">6</button>
-      <button class="pin-key" data-val="7">7</button>
-      <button class="pin-key" data-val="8">8</button>
-      <button class="pin-key" data-val="9">9</button>
-      <button class="pin-key pin-clear" id="pin-clear-btn">CLR</button>
-      <button class="pin-key" data-val="0">0</button>
-      <button class="pin-key pin-enter" id="pin-enter-btn">▶</button>
-    </div>
+      <h2 class="access-heading">SECURE ACCESS</h2>
+      <p class="access-subtext">Enter your 4-digit PIN to continue</p>
 
-    <p class="pin-error hidden" id="pin-error">⚠ Access denied. Incorrect PIN.</p>
-    <p class="pin-hint">Default PIN: <code>1234</code> — change in settings</p>
+      <!-- PIN dots -->
+      <div class="pin-dots-row" id="pin-dots">
+        <div class="pin-dot" id="dot-0"></div>
+        <div class="pin-dot" id="dot-1"></div>
+        <div class="pin-dot" id="dot-2"></div>
+        <div class="pin-dot" id="dot-3"></div>
+      </div>
+
+      <!-- PIN numpad -->
+      <div class="pin-grid">
+        <button class="pin-key" data-v="1">1</button>
+        <button class="pin-key" data-v="2">2</button>
+        <button class="pin-key" data-v="3">3</button>
+        <button class="pin-key" data-v="4">4</button>
+        <button class="pin-key" data-v="5">5</button>
+        <button class="pin-key" data-v="6">6</button>
+        <button class="pin-key" data-v="7">7</button>
+        <button class="pin-key" data-v="8">8</button>
+        <button class="pin-key" data-v="9">9</button>
+        <button class="pin-key pin-clr" id="pin-clr">CLR</button>
+        <button class="pin-key" data-v="0">0</button>
+        <button class="pin-key pin-go" id="pin-go">▶</button>
+      </div>
+
+      <div class="pin-error hidden" id="pin-error">⚠ ACCESS DENIED — INCORRECT PIN</div>
+
+      <!-- Future placeholder: voice login -->
+      <div class="pin-future-hint">
+        <span class="future-badge">SOON</span> Voice recognition login
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ============================================================
-     SCREEN 3: CONNECTING TRANSITION
-     ============================================================ -->
+<!-- ══════════════════════════════════════════════════════
+     SCREEN: CONNECTING
+     ══════════════════════════════════════════════════════ -->
 <div id="screen-connect" class="screen">
-  <div class="connect-container">
-    <div class="connect-pulse"></div>
-    <div class="connect-status-list" id="connect-list">
-      <div class="connect-line" id="cl-0">
-        <span class="cline-dot pending"></span>
-        <span>Authenticating credentials…</span>
+  <div class="connect-wrap">
+    <div class="connect-anim">
+      <div class="c-ring r1"></div>
+      <div class="c-ring r2"></div>
+      <div class="c-ring r3"></div>
+      <div class="c-core">
+        <svg viewBox="0 0 40 40" width="32" height="32">
+          <polygon points="20,2 37,11 37,29 20,38 3,29 3,11" fill="none" stroke="var(--blue-bright)" stroke-width="1.5"/>
+          <text x="20" y="26" text-anchor="middle" font-family="Exo 2" font-weight="900" font-size="14" fill="var(--blue-bright)">A</text>
+        </svg>
       </div>
-      <div class="connect-line" id="cl-1">
-        <span class="cline-dot pending"></span>
-        <span>Connecting to ARIA backend…</span>
-      </div>
-      <div class="connect-line" id="cl-2">
-        <span class="cline-dot pending"></span>
-        <span>Loading user profile…</span>
-      </div>
-      <div class="connect-line" id="cl-3">
-        <span class="cline-dot pending"></span>
-        <span>ARIA online. Launching dashboard…</span>
-      </div>
+    </div>
+    <div class="connect-lines" id="connect-lines">
+      <div class="c-line pending" id="cl-0"><span class="c-dot"></span><span>Authenticating credentials…</span></div>
+      <div class="c-line pending" id="cl-1"><span class="c-dot"></span><span>Establishing backend link…</span></div>
+      <div class="c-line pending" id="cl-2"><span class="c-dot"></span><span>Loading AI engines…</span></div>
+      <div class="c-line pending" id="cl-3"><span class="c-dot"></span><span>ARIA ready — launching dashboard…</span></div>
     </div>
   </div>
 </div>
 
-<!-- ============================================================
-     SCREEN 4: DASHBOARD
-     ============================================================ -->
-<div id="screen-dashboard" class="screen">
+<!-- ══════════════════════════════════════════════════════
+     SCREEN: DASHBOARD
+     ══════════════════════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen dashboard-screen">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-brand">
+        <svg viewBox="0 0 36 36" width="26" height="26">
+          <polygon points="18,2 33,10 33,26 18,34 3,26 3,10" fill="none" stroke="var(--blue-bright)" stroke-width="1.5"/>
+          <text x="18" y="23" text-anchor="middle" font-family="Exo 2" font-weight="900" font-size="13" fill="var(--blue-bright)">A</text>
+        </svg>
+        <span class="topbar-name">ARIA</span>
+      </div>
+      <div class="topbar-greeting" id="topbar-greeting"></div>
+    </div>
+    <div class="topbar-right">
+      <!-- Backend status indicator -->
+      <div class="backend-status" id="backend-status" title="Backend connection status">
+        <span class="bs-dot" id="bs-dot"></span>
+        <span class="bs-label" id="bs-label">CONNECTING</span>
+      </div>
+      <button class="topbar-icon-btn" id="btn-settings" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+      <button class="topbar-icon-btn" id="btn-lock" title="Lock ARIA">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </button>
+    </div>
+  </header>
 
   <!-- SIDEBAR -->
   <nav class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <svg viewBox="0 0 50 50" width="32" height="32">
-        <polygon points="25,2 47,14 47,36 25,48 3,36 3,14" fill="none" stroke="var(--red)" stroke-width="1.5"/>
-        <text x="25" y="33" text-anchor="middle" font-family="Orbitron" font-weight="900" font-size="16" fill="var(--red)">A</text>
-      </svg>
-      <span class="sidebar-name">ARIA</span>
-    </div>
-
-    <div class="sidebar-nav">
-      <button class="nav-item active" data-panel="panel-chat">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-        <span>Chat</span>
+    <div class="sidebar-section">
+      <div class="sidebar-sec-label">INTERFACE</div>
+      <button class="sidebar-btn active" data-view="chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Chat
       </button>
-      <button class="nav-item" data-panel="panel-commands">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        <span>Commands</span>
-      </button>
-      <button class="nav-item" data-panel="panel-expenses">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-        <span>Expenses</span>
-      </button>
-      <button class="nav-item" data-panel="panel-memory">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-        <span>Memory</span>
-      </button>
-      <button class="nav-item" data-panel="panel-status">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        <span>Status</span>
+      <button class="sidebar-btn" data-view="debate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>AI Debate
       </button>
     </div>
-
-    <div class="sidebar-bottom">
-      <button class="nav-item" id="btn-settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-        <span>Settings</span>
+    <div class="sidebar-section">
+      <div class="sidebar-sec-label">FUTURE MODULES</div>
+      <button class="sidebar-btn future" title="Coming soon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Stock Dashboard
       </button>
-      <button class="nav-item nav-logout" id="btn-logout">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span>Lock</span>
+      <button class="sidebar-btn future" title="Coming soon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Expense Tracker
+      </button>
+      <button class="sidebar-btn future" title="Coming soon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>News Briefing
+      </button>
+      <button class="sidebar-btn future" title="Coming soon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>Memory System
+      </button>
+      <button class="sidebar-btn future" title="Coming soon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10a7 7 0 01-14 0"/><line x1="12" y1="17" x2="12" y2="22"/></svg>Voice Always-On
       </button>
     </div>
   </nav>
 
-  <!-- MOBILE SIDEBAR TOGGLE -->
-  <button class="sidebar-toggle" id="sidebar-toggle">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-  </button>
+  <!-- MAIN CONTENT AREA -->
+  <main class="main" id="main-area">
 
-  <!-- MAIN CONTENT -->
-  <main class="main-content">
+    <!-- ── VIEW: CHAT ── -->
+    <section class="view active" id="view-chat">
 
-    <!-- TOP BAR -->
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-greeting" id="topbar-greeting">Good morning, Mr. Kritesh.</div>
-        <div class="topbar-date" id="topbar-date"></div>
-      </div>
-      <div class="topbar-right">
-        <div class="status-indicator" id="status-indicator">
-          <span class="status-dot" id="status-dot"></span>
-          <span id="status-text">ONLINE</span>
+      <div class="view-header">
+        <div>
+          <h1 class="view-title">Chat Interface</h1>
+          <p class="view-sub">Direct AI conversation — single model mode</p>
         </div>
-        <button class="topbar-btn" id="btn-briefing" title="Daily Briefing">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Briefing
-        </button>
-        <button class="topbar-btn" id="btn-voice-toggle" title="Toggle Voice Output">
-          <svg id="voice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
-          Voice
-        </button>
-      </div>
-    </header>
-
-    <!-- PANELS CONTAINER -->
-    <div class="panels-wrap">
-
-      <!-- ── PANEL: CHAT ── -->
-      <section class="panel active" id="panel-chat">
-        <div class="panel-header">
-          <h2 class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            Chat Interface
-          </h2>
-          <div class="panel-header-actions">
-            <select id="model-selector" class="model-select" title="Select AI Model">
-              <option value="gpt-4o">GPT-4o</option>
-              <option value="gpt-4-turbo">GPT-4 Turbo</option>
-              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-              <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-              <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-            </select>
-            <button class="panel-btn" id="btn-clear-chat" title="Clear chat history">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-              Clear
-            </button>
-          </div>
-        </div>
-
-        <div class="chat-feed" id="chat-feed">
-          <!-- Messages injected by JS -->
-        </div>
-
-        <div class="chat-input-area">
-          <button class="mic-btn" id="mic-btn" title="Voice input">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10a7 7 0 01-14 0"/><line x1="12" y1="17" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-          </button>
-          <input
-            type="text"
-            id="chat-input"
-            class="chat-input"
-            placeholder="Message ARIA… or type a command"
-            autocomplete="off"
-            spellcheck="false"
-          />
-          <button class="send-btn" id="send-btn" title="Send message">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          </button>
-        </div>
-      </section>
-
-      <!-- ── PANEL: COMMANDS ── -->
-      <section class="panel" id="panel-commands">
-        <div class="panel-header">
-          <h2 class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            Command Center
-          </h2>
-        </div>
-
-        <div class="commands-grid">
-          <div class="cmd-group">
-            <div class="cmd-group-title">Web Shortcuts</div>
-            <div class="cmd-buttons">
-              <button class="cmd-btn" data-cmd="open YouTube"><span>▶</span> YouTube</button>
-              <button class="cmd-btn" data-cmd="open Google"><span>🔍</span> Google</button>
-              <button class="cmd-btn" data-cmd="open Gmail"><span>✉</span> Gmail</button>
-              <button class="cmd-btn" data-cmd="open GitHub"><span>⌥</span> GitHub</button>
-              <button class="cmd-btn" data-cmd="open Reddit"><span>◈</span> Reddit</button>
-              <button class="cmd-btn" data-cmd="open Spotify"><span>♫</span> Spotify</button>
-              <button class="cmd-btn" data-cmd="open Netflix"><span>▣</span> Netflix</button>
-              <button class="cmd-btn" data-cmd="open Twitter"><span>✦</span> Twitter/X</button>
-            </div>
-          </div>
-
-          <div class="cmd-group">
-            <div class="cmd-group-title">ARIA Commands</div>
-            <div class="cmd-buttons">
-              <button class="cmd-btn" data-cmd="what time is it"><span>◷</span> Time</button>
-              <button class="cmd-btn" data-cmd="show today's date"><span>📅</span> Date</button>
-              <button class="cmd-btn" data-cmd="clear chat"><span>⊗</span> Clear Chat</button>
-              <button class="cmd-btn" data-cmd="start voice mode"><span>🎙</span> Voice On</button>
-              <button class="cmd-btn" data-cmd="stop voice mode"><span>🔇</span> Voice Off</button>
-              <button class="cmd-btn" data-cmd="show memory"><span>⊛</span> Memory</button>
-            </div>
-          </div>
-
-          <div class="cmd-group">
-            <div class="cmd-group-title">System (Native Bridge Required)</div>
-            <div class="cmd-buttons">
-              <button class="cmd-btn cmd-disabled" data-cmd="sys-shutdown"><span>⏻</span> Shutdown</button>
-              <button class="cmd-btn cmd-disabled" data-cmd="sys-restart"><span>↺</span> Restart</button>
-              <button class="cmd-btn cmd-disabled" data-cmd="sys-lock"><span>🔒</span> Lock Screen</button>
-              <button class="cmd-btn cmd-disabled" data-cmd="sys-sleep"><span>☽</span> Sleep</button>
-            </div>
-          </div>
-
-          <div class="cmd-group">
-            <div class="cmd-group-title">Search</div>
-            <div class="cmd-search-row">
-              <input type="text" id="search-query" class="cmd-search-input" placeholder="Search term…" />
-              <button class="cmd-btn" id="search-google-btn"><span>G</span> Google</button>
-              <button class="cmd-btn" id="search-youtube-btn"><span>▶</span> YouTube</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── PANEL: EXPENSES ── -->
-      <section class="panel" id="panel-expenses">
-        <div class="panel-header">
-          <h2 class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-            Expense Tracker
-          </h2>
-          <div class="panel-header-actions">
-            <button class="panel-btn danger" id="btn-clear-expenses">Clear All</button>
-          </div>
-        </div>
-
-        <div class="expense-add-form">
-          <input type="text" id="exp-name" class="exp-input" placeholder="Description" />
-          <input type="number" id="exp-amount" class="exp-input exp-amount" placeholder="$0.00" step="0.01" min="0" />
-          <select id="exp-category" class="exp-input exp-cat">
-            <option value="Food">Food</option>
-            <option value="Transport">Transport</option>
-            <option value="Tech">Tech</option>
-            <option value="Education">Education</option>
-            <option value="Utilities">Utilities</option>
-            <option value="Entertainment">Entertainment</option>
-            <option value="Other">Other</option>
+        <div class="view-header-controls">
+          <select id="model-select" class="model-dropdown">
+            <option value="openai">⬡ OpenAI GPT-4o</option>
+            <option value="claude">◈ Claude 3.5 Sonnet</option>
+            <option value="gemini">◇ Gemini 1.5 Pro</option>
+            <option value="deepseek">◆ DeepSeek Chat</option>
           </select>
-          <input type="date" id="exp-date" class="exp-input exp-date" />
-          <button class="exp-add-btn" id="btn-add-expense">+ Add</button>
+          <button class="ctrl-btn" id="btn-clear-chat">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+            Clear
+          </button>
         </div>
+      </div>
 
-        <div class="expense-summary">
-          <div class="exp-stat">
-            <div class="exp-stat-label">Total Expenses</div>
-            <div class="exp-stat-value" id="exp-total">$0.00</div>
-          </div>
-          <div class="exp-stat">
-            <div class="exp-stat-label">This Month</div>
-            <div class="exp-stat-value" id="exp-month">$0.00</div>
-          </div>
-          <div class="exp-stat">
-            <div class="exp-stat-label">Entries</div>
-            <div class="exp-stat-value" id="exp-count">0</div>
-          </div>
+      <!-- Disclaimer banner -->
+      <div class="disclaimer-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        ARIA provides research and analysis only — not guaranteed financial advice. Always consult a qualified professional before making investment decisions.
+      </div>
+
+      <div class="chat-feed" id="chat-feed"></div>
+
+      <div class="chat-input-bar">
+        <button class="mic-btn" id="mic-btn" title="Voice input (coming soon)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10a7 7 0 01-14 0"/><line x1="12" y1="17" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+        </button>
+        <input type="text" id="chat-input" class="chat-input" placeholder="Ask ARIA anything — strategy, markets, decisions…" autocomplete="off" spellcheck="false" />
+        <button class="send-btn" id="send-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ── VIEW: DEBATE ── -->
+    <section class="view" id="view-debate">
+
+      <div class="view-header">
+        <div>
+          <h1 class="view-title">AI Debate Mode</h1>
+          <p class="view-sub">All four AI models analyze your question — OpenAI delivers the final judgment</p>
         </div>
-
-        <div class="expense-list" id="expense-list">
-          <!-- injected by JS -->
-        </div>
-      </section>
-
-      <!-- ── PANEL: MEMORY ── -->
-      <section class="panel" id="panel-memory">
-        <div class="panel-header">
-          <h2 class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-            Memory &amp; History
-          </h2>
-          <div class="panel-header-actions">
-            <button class="panel-btn danger" id="btn-clear-memory">Clear Memory</button>
-          </div>
-        </div>
-
-        <div class="memory-stats">
-          <div class="mem-stat"><span class="mem-stat-n" id="mem-msg-count">0</span><span>Messages Stored</span></div>
-          <div class="mem-stat"><span class="mem-stat-n" id="mem-session">1</span><span>Sessions</span></div>
-          <div class="mem-stat"><span class="mem-stat-n" id="mem-days">0</span><span>Days Active</span></div>
-        </div>
-
-        <div class="memory-feed" id="memory-feed">
-          <!-- injected by JS -->
-        </div>
-      </section>
-
-      <!-- ── PANEL: STATUS ── -->
-      <section class="panel" id="panel-status">
-        <div class="panel-header">
-          <h2 class="panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            System Status
-          </h2>
-          <div class="panel-header-actions">
-            <button class="panel-btn" id="btn-refresh-status">Refresh</button>
+        <div class="view-header-controls">
+          <!-- Debate Mode Toggle -->
+          <div class="debate-toggle-wrap">
+            <span class="debate-toggle-label">Debate Mode</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="debate-toggle" checked />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+            <span class="debate-toggle-status" id="debate-status-text">ON</span>
           </div>
         </div>
+      </div>
 
-        <div class="status-grid">
-          <div class="status-card">
-            <div class="status-card-label">ARIA Core</div>
-            <div class="status-card-val online">ONLINE</div>
-            <div class="status-card-sub">v3.0.0 — Web Edition</div>
+      <!-- Disclaimer -->
+      <div class="disclaimer-banner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Multi-model analysis for research purposes only. Not financial advice. Perspectives may conflict — use your judgment.
+      </div>
+
+      <!-- Debate OFF message -->
+      <div class="debate-off-msg hidden" id="debate-off-msg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        <p>AI Debate Mode is OFF. Toggle it on to run multi-model analysis.</p>
+      </div>
+
+      <!-- Debate results area -->
+      <div class="debate-area" id="debate-area">
+        <!-- Agent cards appear here when a debate runs -->
+        <div class="debate-placeholder" id="debate-placeholder">
+          <div class="dp-icon">
+            <svg viewBox="0 0 60 60" fill="none" width="48" height="48">
+              <polygon points="30,4 54,17 54,43 30,56 6,43 6,17" stroke="var(--blue-bright)" stroke-width="1" fill="none" opacity="0.4"/>
+              <text x="30" y="38" text-anchor="middle" font-family="Exo 2" font-weight="700" font-size="22" fill="var(--blue-bright)" opacity="0.5">?</text>
+            </svg>
           </div>
-          <div class="status-card">
-            <div class="status-card-label">Backend API</div>
-            <div class="status-card-val" id="sc-backend">CHECKING…</div>
-            <div class="status-card-sub" id="sc-backend-sub">—</div>
-          </div>
-          <div class="status-card">
-            <div class="status-card-label">Voice Engine</div>
-            <div class="status-card-val" id="sc-voice">CHECKING…</div>
-            <div class="status-card-sub" id="sc-voice-sub">—</div>
-          </div>
-          <div class="status-card">
-            <div class="status-card-label">API Key</div>
-            <div class="status-card-val" id="sc-apikey">NOT SET</div>
-            <div class="status-card-sub" id="sc-apikey-sub">Set in Settings</div>
-          </div>
-          <div class="status-card">
-            <div class="status-card-label">Active Model</div>
-            <div class="status-card-val" id="sc-model">GPT-4o</div>
-            <div class="status-card-sub">Change in Chat panel</div>
-          </div>
-          <div class="status-card">
-            <div class="status-card-label">Memory</div>
-            <div class="status-card-val online" id="sc-memory">ACTIVE</div>
-            <div class="status-card-sub" id="sc-memory-sub">localStorage</div>
-          </div>
+          <p class="dp-text">Ask a question below to begin multi-model analysis.</p>
+          <p class="dp-hint">Best for: market research · business validation · strategic decisions</p>
         </div>
+      </div>
 
-        <div class="status-log-wrap">
-          <div class="status-log-title">System Log</div>
-          <div class="status-log" id="system-log">
-            <!-- injected by JS -->
-          </div>
-        </div>
-      </section>
+      <!-- Debate input -->
+      <div class="chat-input-bar debate-input-bar">
+        <input type="text" id="debate-input" class="chat-input" placeholder="Ask a strategic question — e.g. 'Will Tesla stock rise in Q4?' or 'Validate this SaaS idea…'" autocomplete="off" spellcheck="false" />
+        <button class="send-btn" id="debate-send-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </section>
 
-    </div><!-- /panels-wrap -->
   </main>
-</div><!-- /screen-dashboard -->
+</div>
 
-<!-- ============================================================
+<!-- ══════════════════════════════════════════════════════
      MODAL: SETTINGS
-     ============================================================ -->
+     ══════════════════════════════════════════════════════ -->
 <div class="modal-overlay hidden" id="modal-settings">
   <div class="modal">
-    <div class="modal-header">
-      <span>ARIA Settings</span>
-      <button class="modal-close" id="modal-settings-close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <div class="modal-hdr">
+      <span>Settings</span>
+      <button class="modal-close" id="settings-close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <div class="modal-body">
-
-      <div class="setting-section">
-        <div class="setting-section-title">API Configuration</div>
-        <div class="setting-row">
-          <label class="setting-label">OpenAI API Key</label>
-          <div class="setting-input-wrap">
-            <input type="password" id="set-apikey" class="setting-input" placeholder="sk-…" />
-            <button class="setting-eye" id="toggle-apikey-vis">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <label class="setting-label">Backend URL <span class="setting-optional">(optional)</span></label>
-          <input type="text" id="set-backend-url" class="setting-input" placeholder="https://your-api.com" />
+      <div class="modal-note">
+        API keys are stored on your <strong>backend server</strong> in the <code>.env</code> file.
+        They are never sent to or stored in the browser.
+      </div>
+      <div class="modal-row">
+        <label>Backend URL</label>
+        <div class="modal-input-wrap">
+          <input type="text" id="set-backend-url" class="modal-input" placeholder="http://localhost:3000" />
         </div>
       </div>
-
-      <div class="setting-section">
-        <div class="setting-section-title">Voice Settings</div>
-        <div class="setting-row">
-          <label class="setting-label">Voice Output</label>
-          <label class="toggle-switch">
-            <input type="checkbox" id="set-voice-output" checked />
-            <span class="toggle-knob"></span>
-          </label>
-        </div>
-        <div class="setting-row">
-          <label class="setting-label">Speech Rate <span class="setting-val-badge" id="rate-badge">1.0</span></label>
-          <input type="range" id="set-voice-rate" min="0.6" max="1.4" step="0.05" value="1.0" class="setting-range" />
-        </div>
-        <div class="setting-row">
-          <label class="setting-label">Pitch <span class="setting-val-badge" id="pitch-badge">0.9</span></label>
-          <input type="range" id="set-voice-pitch" min="0.5" max="1.3" step="0.05" value="0.9" class="setting-range" />
-        </div>
-        <div class="setting-row">
-          <label class="setting-label">Voice</label>
-          <select id="set-voice-select" class="setting-input"></select>
-        </div>
-        <button class="setting-test-btn" id="btn-test-voice">▶ Test Voice</button>
+      <div class="modal-row">
+        <label>Default Model</label>
+        <select id="set-default-model" class="modal-input">
+          <option value="openai">OpenAI GPT-4o</option>
+          <option value="claude">Claude 3.5 Sonnet</option>
+          <option value="gemini">Gemini 1.5 Pro</option>
+          <option value="deepseek">DeepSeek Chat</option>
+        </select>
       </div>
-
-      <div class="setting-section">
-        <div class="setting-section-title">Access PIN</div>
-        <div class="setting-row">
-          <label class="setting-label">Current PIN</label>
-          <input type="password" id="set-pin-current" class="setting-input" placeholder="Current PIN" maxlength="4" />
-        </div>
-        <div class="setting-row">
-          <label class="setting-label">New PIN</label>
-          <input type="password" id="set-pin-new" class="setting-input" placeholder="New 4-digit PIN" maxlength="4" />
-        </div>
-        <button class="setting-test-btn" id="btn-change-pin">Change PIN</button>
-        <p class="setting-feedback hidden" id="pin-change-msg"></p>
+      <div class="modal-row">
+        <label>User Name</label>
+        <input type="text" id="set-username" class="modal-input" placeholder="Mr. Kritesh" value="Mr. Kritesh" />
       </div>
-
-      <div class="setting-section">
-        <div class="setting-section-title">Session</div>
-        <div class="setting-row">
-          <label class="setting-label">Stay logged in</label>
-          <label class="toggle-switch">
-            <input type="checkbox" id="set-stay-logged-in" checked />
-            <span class="toggle-knob"></span>
-          </label>
-        </div>
-        <div class="setting-row">
-          <label class="setting-label">User Name</label>
-          <input type="text" id="set-username" class="setting-input" placeholder="Mr. Kritesh" value="Mr. Kritesh" />
-        </div>
+      <div class="modal-row">
+        <label>Stay Logged In</label>
+        <label class="toggle-switch sm">
+          <input type="checkbox" id="set-stay-in" checked />
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
       </div>
-
     </div>
-    <div class="modal-footer">
-      <button class="modal-btn secondary" id="modal-settings-cancel">Cancel</button>
-      <button class="modal-btn primary" id="modal-settings-save">Save Settings</button>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================================
-     MODAL: DAILY BRIEFING
-     ============================================================ -->
-<div class="modal-overlay hidden" id="modal-briefing">
-  <div class="modal modal-lg">
-    <div class="modal-header">
-      <span>Daily Briefing</span>
-      <button class="modal-close" id="modal-briefing-close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body" id="briefing-body">
-      <!-- injected by JS -->
+    <div class="modal-ftr">
+      <button class="modal-btn cancel" id="settings-cancel">Cancel</button>
+      <button class="modal-btn save" id="settings-save">Save</button>
     </div>
   </div>
 </div>
 
 <!-- TOAST container -->
-<div class="toast-container" id="toast-container"></div>
+<div id="toasts" class="toasts"></div>
 
+<!-- API keys NEVER go here. They live in .env on the backend server. -->
 <script src="script.js"></script>
 </body>
 </html>
