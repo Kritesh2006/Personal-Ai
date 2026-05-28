@@ -189,7 +189,7 @@ function initBootCanvas() {
 async function runBoot() {
   initAtmoCanvas();
   initBootCanvas();
-  const bar  = $('boot-bar');
+  const bar  = $('bpr-fill');
   const pct  = $('bpr-pct');
   const log  = $('boot-log');
   const CIRC = 2*Math.PI*52;
