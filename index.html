@@ -1,368 +1,433 @@
 <!--
-ARIA SYSTEM
-Created by Kritesh Dhungel.
-This code belongs to Kritesh Dhungel.
-Unauthorized copying, resale, or redistribution is prohibited.
-Violation may result in a $100 copyright fine.
+  ARIA SYSTEM v4
+  Created by Kritesh Dhungel © 2025
+  Unauthorized copying or redistribution prohibited.
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <title>ARIA — K:D System</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="style.css"/>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>ARIA — K:D Intelligence System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<!-- GRAIN OVERLAY -->
-<div class="grain" aria-hidden="true"></div>
+<!-- ═══════════════════════════
+     BOOT SCREEN
+═══════════════════════════ -->
+<div id="boot" class="screen boot-screen active">
+  <canvas id="boot-canvas"></canvas>
+  <div class="boot-content">
+    <div class="boot-kd">K:D</div>
+    <div class="boot-bar-wrap"><div class="boot-bar" id="boot-bar"></div></div>
+    <div class="boot-logs" id="boot-logs"></div>
+    <div class="boot-pct" id="boot-pct">0%</div>
+  </div>
+</div>
 
-<!-- SCAN LINES -->
-<div class="scanlines" aria-hidden="true"></div>
-
-<!-- ╔══════════════════════════════════╗
-     ║  SCREEN 1 — BOOT                ║
-     ╚══════════════════════════════════╝ -->
-<div id="s-boot" class="screen active">
-  <div class="boot-bg-grid" aria-hidden="true"></div>
-
-  <div class="boot-center">
-    <!-- K:D LOGO -->
-    <div class="kd-logo boot-logo" id="boot-logo">
-      <div class="kd-mark">K:D</div>
-      <div class="kd-sub">ARIA SYSTEM</div>
+<!-- ═══════════════════════════
+     PIN SCREEN
+═══════════════════════════ -->
+<div id="pin-screen" class="screen">
+  <canvas id="pin-canvas"></canvas>
+  <div class="pin-card">
+    <div class="pin-card-glow"></div>
+    <div class="pin-kd">K:D</div>
+    <div class="pin-title">ARIA SYSTEM</div>
+    <div class="pin-sub">SECURE ACCESS REQUIRED</div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pdot" id="pd0"></div>
+      <div class="pdot" id="pd1"></div>
+      <div class="pdot" id="pd2"></div>
+      <div class="pdot" id="pd3"></div>
     </div>
-
-    <!-- Boot ring -->
-    <div class="boot-ring-wrap">
-      <svg class="boot-ring-svg" viewBox="0 0 200 200">
-        <circle cx="100" cy="100" r="88" class="ring-track"/>
-        <circle cx="100" cy="100" r="88" class="ring-fill" id="ring-fill"/>
-        <circle cx="100" cy="100" r="64" class="ring-inner"/>
-        <circle cx="100" cy="100" r="40" class="ring-core" id="ring-core"/>
-      </svg>
-      <div class="boot-pct-display" id="boot-pct">0</div>
+    <div class="pin-grid">
+      <button class="pkey" data-v="1">1</button>
+      <button class="pkey" data-v="2">2</button>
+      <button class="pkey" data-v="3">3</button>
+      <button class="pkey" data-v="4">4</button>
+      <button class="pkey" data-v="5">5</button>
+      <button class="pkey" data-v="6">6</button>
+      <button class="pkey" data-v="7">7</button>
+      <button class="pkey" data-v="8">8</button>
+      <button class="pkey" data-v="9">9</button>
+      <button class="pkey pkey-del" id="pkey-del">⌫</button>
+      <button class="pkey" data-v="0">0</button>
+      <button class="pkey pkey-ok" id="pkey-ok">▶</button>
     </div>
+    <div class="pin-error hidden" id="pin-error">⚠ ACCESS DENIED</div>
+  </div>
+</div>
 
-    <!-- Log stream -->
-    <div class="boot-stream" id="boot-stream">
-      <div class="bsl" id="bsl-0">INITIALIZING ARIA CORE</div>
-      <div class="bsl" id="bsl-1">LOADING DEBATE ENGINE</div>
-      <div class="bsl" id="bsl-2">CALIBRATING AGENTS</div>
-      <div class="bsl" id="bsl-3">NEURAL NETWORK READY</div>
-      <div class="bsl" id="bsl-4">SYSTEM ONLINE</div>
+<!-- ═══════════════════════════
+     CONNECT SCREEN
+═══════════════════════════ -->
+<div id="conn-screen" class="screen">
+  <canvas id="conn-canvas"></canvas>
+  <div class="conn-box">
+    <div class="conn-kd">K:D</div>
+    <div class="conn-ring-outer"><div class="conn-ring-inner"></div></div>
+    <div class="conn-steps" id="conn-steps">
+      <div class="cstep" id="cs0"><span class="cs-dot"></span><span>AUTHENTICATING</span></div>
+      <div class="cstep" id="cs1"><span class="cs-dot"></span><span>BACKEND LINK</span></div>
+      <div class="cstep" id="cs2"><span class="cs-dot"></span><span>LOADING ENGINES</span></div>
+      <div class="cstep" id="cs3"><span class="cs-dot"></span><span>ARIA READY</span></div>
     </div>
   </div>
 </div>
 
-<!-- ╔══════════════════════════════════╗
-     ║  SCREEN 2 — ACCESS              ║
-     ╚══════════════════════════════════╝ -->
-<div id="s-access" class="screen">
-  <div class="access-grid-bg" aria-hidden="true"></div>
+<!-- ═══════════════════════════
+     MAIN DASHBOARD
+═══════════════════════════ -->
+<div id="app" class="screen app-screen">
 
-  <div class="access-card">
-    <div class="access-corner tl"></div>
-    <div class="access-corner tr"></div>
-    <div class="access-corner bl"></div>
-    <div class="access-corner br"></div>
-
-    <div class="kd-logo ac-logo">
-      <div class="kd-mark sm">K:D</div>
-    </div>
-
-    <div class="access-headline">SECURE ACCESS</div>
-    <div class="access-sub">ARIA CONTROL SYSTEM — AUTHORIZED ONLY</div>
-
-    <!-- PIN visualizer — 4 segments -->
-    <div class="pin-segments" id="pin-segs">
-      <div class="pin-seg" id="ps-0"></div>
-      <div class="pin-seg" id="ps-1"></div>
-      <div class="pin-seg" id="ps-2"></div>
-      <div class="pin-seg" id="ps-3"></div>
-    </div>
-
-    <!-- Numpad -->
-    <div class="numpad">
-      <button class="nk" data-v="1">1</button>
-      <button class="nk" data-v="2">2</button>
-      <button class="nk" data-v="3">3</button>
-      <button class="nk" data-v="4">4</button>
-      <button class="nk" data-v="5">5</button>
-      <button class="nk" data-v="6">6</button>
-      <button class="nk" data-v="7">7</button>
-      <button class="nk" data-v="8">8</button>
-      <button class="nk" data-v="9">9</button>
-      <button class="nk nk-del" id="nk-del">⌫</button>
-      <button class="nk" data-v="0">0</button>
-      <button class="nk nk-ok" id="nk-ok">▶</button>
-    </div>
-
-    <div class="pin-err hidden" id="pin-err">ACCESS DENIED</div>
-  </div>
-</div>
-
-<!-- ╔══════════════════════════════════╗
-     ║  SCREEN 3 — CONNECTING          ║
-     ╚══════════════════════════════════╝ -->
-<div id="s-conn" class="screen">
-  <div class="conn-center">
-    <div class="conn-orb" id="conn-orb">
-      <div class="orb-ring o1"></div>
-      <div class="orb-ring o2"></div>
-      <div class="orb-ring o3"></div>
-      <div class="orb-core">
-        <div class="kd-mark sm">K:D</div>
-      </div>
-    </div>
-    <div class="conn-lines" id="conn-lines">
-      <div class="cl-item" id="cl-0"><span class="cl-bullet"></span><span class="cl-text">VERIFYING CREDENTIALS</span></div>
-      <div class="cl-item" id="cl-1"><span class="cl-bullet"></span><span class="cl-text">ESTABLISHING BACKEND LINK</span></div>
-      <div class="cl-item" id="cl-2"><span class="cl-bullet"></span><span class="cl-text">LOADING AI ENGINES</span></div>
-      <div class="cl-item" id="cl-3"><span class="cl-bullet"></span><span class="cl-text">ARIA SYSTEM READY</span></div>
-    </div>
-  </div>
-</div>
-
-<!-- ╔══════════════════════════════════╗
-     ║  SCREEN 4 — DASHBOARD           ║
-     ╚══════════════════════════════════╝ -->
-<div id="s-dash" class="screen dash-screen">
-
-  <!-- TOP NAV -->
-  <nav class="nav">
-    <div class="nav-left">
-      <button class="nav-menu-btn" id="nav-menu-btn" aria-label="menu">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="kd-logo nav-logo">
-        <div class="kd-mark xs">K:D</div>
-        <div class="nav-aria-label">ARIA</div>
-      </div>
-    </div>
-
-    <div class="nav-center" id="nav-status-display">
-      <!-- mode indicator injected by JS -->
-    </div>
-
-    <div class="nav-right">
-      <div class="status-pill" id="status-pill">
-        <div class="sp-dot" id="sp-dot"></div>
-        <span id="sp-label">OFFLINE</span>
-      </div>
-      <button class="nav-icon-btn" id="btn-settings" aria-label="settings">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="2.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"/></svg>
-      </button>
-      <button class="nav-icon-btn danger" id="btn-lock" aria-label="lock">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="9" width="14" height="9" rx="1.5"/><path d="M7 9V6a3 3 0 016 0v3"/></svg>
-      </button>
-    </div>
-  </nav>
-
-  <!-- SIDEBAR -->
+  <!-- LEFT SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <div class="sb-brand">
-      <div class="kd-mark sm">K:D</div>
-      <div class="sb-system-name">ARIA</div>
+    <div class="sb-logo">
+      <span class="sb-kd">K:D</span>
     </div>
     <nav class="sb-nav">
-      <button class="sb-btn active" data-view="chat">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 12a2 2 0 01-2 2H6l-3 3V4a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-        <span>CHAT</span>
+      <button class="sb-btn active" data-view="chat" title="Chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Chat</span>
       </button>
-      <button class="sb-btn" data-view="debate">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>
-        <span>DEBATE</span>
+      <button class="sb-btn" data-view="debate" title="AI Debate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        <span>Debate</span>
+      </button>
+      <button class="sb-btn" data-view="voice" title="Voice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        <span>Voice</span>
+      </button>
+      <button class="sb-btn" data-view="agents" title="Agents">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Agents</span>
+      </button>
+      <button class="sb-btn" data-view="memory" title="Memory">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        <span>Memory</span>
+      </button>
+      <button class="sb-btn" data-view="markets" title="Markets">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        <span>Markets</span>
       </button>
     </nav>
-    <div class="sb-footer">
-      <div class="sb-footer-text">© Kritesh Dhungel · ARIA System</div>
+    <div class="sb-bottom">
+      <button class="sb-btn" id="sb-settings" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
+      </button>
+      <button class="sb-btn sb-lock" id="sb-lock" title="Lock">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Lock</span>
+      </button>
     </div>
   </aside>
 
-  <!-- MAIN -->
-  <main class="main" id="main">
+  <!-- MAIN AREA -->
+  <div class="main-wrap">
 
-    <!-- ░░ VIEW: CHAT ░░ -->
-    <section class="view active" id="view-chat">
-      <!-- Chat header bar -->
-      <div class="chat-header">
-        <div class="ch-left">
-          <div class="view-label">CHAT INTERFACE</div>
-          <select id="model-select" class="model-sel">
-            <option value="openai">GPT-4o</option>
-            <option value="claude">CLAUDE 3.5</option>
-            <option value="gemini">GEMINI 1.5</option>
-            <option value="deepseek">DEEPSEEK</option>
-          </select>
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="tb-left">
+        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+        <div class="tb-kd">K:D</div>
+        <div class="tb-divider"></div>
+        <div class="tb-aria-label">ARIA</div>
+        <div class="tb-version">v4.0</div>
+      </div>
+      <div class="tb-center" id="tb-model-display">
+        <div class="model-chip" id="model-chip">
+          <span class="mc-dot" id="mc-dot"></span>
+          <span id="mc-label">GPT-4o</span>
         </div>
-        <div class="ch-right">
-          <button class="hdr-btn" id="btn-clear-chat">
-            <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="2 5 4 5 16 5"/><path d="M14 5l-.8 10a1.5 1.5 0 01-1.5 1.5H6.3a1.5 1.5 0 01-1.5-1.5L4 5"/></svg>
-            CLEAR
+      </div>
+      <div class="tb-right">
+        <div class="tb-status" id="tb-status">
+          <div class="ts-dot" id="ts-dot"></div>
+          <span id="ts-label">OFFLINE</span>
+        </div>
+        <button class="tb-btn" id="tb-clear" title="Clear chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+        <select class="model-select" id="model-select">
+          <option value="openai">GPT-4o</option>
+          <option value="claude">Claude 3.5</option>
+          <option value="gemini">Gemini 1.5</option>
+          <option value="deepseek">DeepSeek</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- FALLBACK BANNER -->
+    <div class="fallback-banner hidden" id="fallback-banner">
+      <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM7 4h2v5H7V4zm0 6h2v2H7v-2z"/></svg>
+      Cloud AI limit reached — local fallback active. Basic math, commands & offline tools work.
+      <button id="banner-close">✕</button>
+    </div>
+
+    <!-- VIEWS CONTAINER -->
+    <div class="views" id="views">
+
+      <!-- ▓▓ CHAT VIEW ▓▓ -->
+      <section class="view active" id="view-chat">
+        <!-- WELCOME STATE -->
+        <div class="welcome" id="welcome">
+          <canvas id="welcome-canvas"></canvas>
+          <div class="wlc-inner">
+            <div class="wlc-kd">K:D</div>
+            <div class="wlc-title">ARIA INTELLIGENCE</div>
+            <div class="wlc-sub">Autonomous Reasoning & Intelligent AI Assistant</div>
+            <div class="wlc-chips">
+              <button class="wlc-chip" data-prompt="Analyze Tesla stock outlook for next quarter">📈 Stock Analysis</button>
+              <button class="wlc-chip" data-prompt="Validate this SaaS business idea for me">🚀 Business Idea</button>
+              <button class="wlc-chip" data-prompt="Build a marketing strategy for a new product launch">📣 Marketing Strategy</button>
+              <button class="wlc-chip" data-prompt="What are the best investment strategies for 2025?">💰 Investment Research</button>
+            </div>
+          </div>
+        </div>
+        <!-- CHAT FEED -->
+        <div class="chat-feed hidden" id="chat-feed"></div>
+        <!-- INPUT -->
+        <div class="input-bar">
+          <button class="ib-mic" id="ib-mic" title="Voice input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+          </button>
+          <input id="chat-input" class="chat-input" type="text" placeholder="Ask ARIA anything — markets, strategy, decisions, math…" autocomplete="off" spellcheck="false"/>
+          <button class="ib-send" id="send-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
-      </div>
+        <div class="input-disclaimer">Research & analysis only — not financial advice</div>
+      </section>
 
-      <!-- Disclaimer -->
-      <div class="disc-bar">
-        <span>RESEARCH ONLY — NOT FINANCIAL ADVICE</span>
-      </div>
-
-      <!-- Feed -->
-      <div class="feed" id="chat-feed">
-        <!-- Welcome state -->
-        <div class="welcome-state" id="chat-welcome">
-          <div class="ws-logo">
-            <div class="ws-ring"></div>
-            <div class="kd-mark lg">K:D</div>
+      <!-- ▓▓ DEBATE VIEW ▓▓ -->
+      <section class="view" id="view-debate">
+        <div class="debate-layout">
+          <!-- Network panel (always visible) -->
+          <div class="network-panel" id="network-panel">
+            <div class="np-header">
+              <span class="np-title">AI NEURAL NETWORK</span>
+              <div class="debate-toggle-wrap">
+                <span class="dt-lbl">MODE</span>
+                <label class="tog">
+                  <input type="checkbox" id="debate-tog" checked/>
+                  <span class="tog-track"><span class="tog-thumb"></span></span>
+                </label>
+                <span id="dt-status" class="dt-status on">ACTIVE</span>
+              </div>
+            </div>
+            <!-- THE NETWORK -->
+            <div class="network-stage" id="network-stage">
+              <canvas id="net-canvas"></canvas>
+              <!-- User node -->
+              <div class="node user-node" id="node-user">
+                <div class="node-ring"></div>
+                <div class="node-body">
+                  <span class="node-icon">👤</span>
+                </div>
+                <div class="node-label">USER</div>
+              </div>
+              <!-- AI Agent nodes -->
+              <div class="node agent-node gpt-node" id="node-gpt">
+                <div class="node-ring"></div>
+                <div class="node-body">GPT</div>
+                <div class="node-label">OpenAI</div>
+                <div class="node-status" id="ns-gpt"></div>
+              </div>
+              <div class="node agent-node claude-node" id="node-claude">
+                <div class="node-ring"></div>
+                <div class="node-body">CLD</div>
+                <div class="node-label">Claude</div>
+                <div class="node-status" id="ns-claude"></div>
+              </div>
+              <div class="node agent-node gemini-node" id="node-gemini">
+                <div class="node-ring"></div>
+                <div class="node-body">GEM</div>
+                <div class="node-label">Gemini</div>
+                <div class="node-status" id="ns-gemini"></div>
+              </div>
+              <div class="node agent-node deepseek-node" id="node-deepseek">
+                <div class="node-ring"></div>
+                <div class="node-body">DSK</div>
+                <div class="node-label">DeepSeek</div>
+                <div class="node-status" id="ns-deepseek"></div>
+              </div>
+              <!-- Judge node -->
+              <div class="node judge-node" id="node-judge">
+                <div class="node-ring"></div>
+                <div class="node-ring node-ring2"></div>
+                <div class="node-body">⚖</div>
+                <div class="node-label">JUDGE</div>
+              </div>
+              <!-- Idle overlay -->
+              <div class="network-idle" id="network-idle">
+                <div class="ni-icon">◈</div>
+                <div class="ni-text">Enter a question to activate the debate network</div>
+              </div>
+            </div>
+            <!-- Debate input -->
+            <div class="debate-input-wrap">
+              <input id="debate-input" class="chat-input" type="text" placeholder="Pose a strategic question — markets, decisions, business…" autocomplete="off"/>
+              <button class="ib-send" id="debate-send">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
           </div>
-          <div class="ws-title">ARIA ONLINE</div>
-          <div class="ws-sub">Select a model. Ask anything.</div>
-        </div>
-      </div>
-
-      <!-- Input -->
-      <div class="input-dock">
-        <button class="mic-dock-btn" id="mic-btn" title="Voice (coming soon)">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="7" y="2" width="6" height="10" rx="3"/><path d="M16 9a6 6 0 01-12 0"/><line x1="10" y1="15" x2="10" y2="19"/><line x1="7" y1="19" x2="13" y2="19"/></svg>
-        </button>
-        <input id="chat-input" class="msg-input" type="text" placeholder="Message ARIA — strategy, markets, decisions…" autocomplete="off" spellcheck="false"/>
-        <button class="send-dock-btn" id="send-btn">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="1" x2="9" y2="11"/><polygon points="19 1 12 19 9 11 1 9 19 1"/></svg>
-        </button>
-      </div>
-    </section>
-
-    <!-- ░░ VIEW: DEBATE ░░ -->
-    <section class="view" id="view-debate">
-      <div class="debate-header">
-        <div class="dh-left">
-          <div class="view-label">AI DEBATE MODE</div>
-          <div class="debate-toggle-row">
-            <span class="dt-label">ENGAGE</span>
-            <label class="toggle-sw">
-              <input type="checkbox" id="debate-toggle" checked/>
-              <span class="tsw-track"><span class="tsw-thumb"></span></span>
-            </label>
-            <span id="dt-status" class="dt-status on">ACTIVE</span>
+          <!-- Results panel -->
+          <div class="debate-results-panel" id="debate-results-panel">
+            <div class="drp-header">AGENT RESPONSES</div>
+            <div class="debate-cards" id="debate-cards">
+              <div class="drp-empty" id="drp-empty">
+                <div class="drp-empty-icon">◈</div>
+                <div>Responses will appear here after debate</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="dh-right">
-          <div class="disc-pill">ANALYSIS ONLY — NOT ADVICE</div>
+      </section>
+
+      <!-- ▓▓ VOICE VIEW ▓▓ -->
+      <section class="view" id="view-voice">
+        <div class="placeholder-view">
+          <div class="pv-icon voice-icon-anim" id="voice-icon-anim">
+            <svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="1.5" width="60" height="60"><path d="M30 5a8 8 0 0 0-8 8v14a8 8 0 0 0 16 0V13a8 8 0 0 0-8-8z"/><path d="M48 27v3a18 18 0 0 1-36 0v-3"/><line x1="30" y1="48" x2="30" y2="55"/><line x1="22" y1="55" x2="38" y2="55"/></svg>
+          </div>
+          <div class="pv-title">VOICE COMMAND</div>
+          <div class="pv-sub">Click mic to start listening · ARIA responds with voice</div>
+          <button class="pv-mic-btn" id="voice-start-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            START LISTENING
+          </button>
+          <div class="pv-transcript" id="voice-transcript"></div>
         </div>
-      </div>
+      </section>
 
-      <!-- NEURAL NETWORK CANVAS -->
-      <div class="neural-wrap" id="neural-wrap">
-        <canvas id="neural-canvas"></canvas>
-
-        <!-- Agent nodes (positioned by JS) -->
-        <div class="agent-node" id="node-claude" data-agent="claude">
-          <div class="an-ring"></div>
-          <div class="an-core">CL</div>
-          <div class="an-label">CLAUDE</div>
+      <!-- ▓▓ AGENTS VIEW ▓▓ -->
+      <section class="view" id="view-agents">
+        <div class="agents-view">
+          <div class="view-section-title">AI AGENTS</div>
+          <div class="agents-grid">
+            <div class="agent-card gpt-card">
+              <div class="ac-dot" style="background:#10a37f"></div>
+              <div class="ac-name">OpenAI GPT-4o</div>
+              <div class="ac-desc">Flagship reasoning model. Best for complex analysis and final judgments.</div>
+              <div class="ac-status" id="acs-gpt">CHECKING…</div>
+            </div>
+            <div class="agent-card claude-card">
+              <div class="ac-dot" style="background:#d97706"></div>
+              <div class="ac-name">Anthropic Claude 3.5</div>
+              <div class="ac-desc">Strategic and nuanced. Excels at long-form analysis and risk assessment.</div>
+              <div class="ac-status" id="acs-claude">CHECKING…</div>
+            </div>
+            <div class="agent-card gemini-card">
+              <div class="ac-dot" style="background:#4285f4"></div>
+              <div class="ac-name">Google Gemini 1.5</div>
+              <div class="ac-desc">Data-driven and trend-focused. Strong quantitative pattern recognition.</div>
+              <div class="ac-status" id="acs-gemini">CHECKING…</div>
+            </div>
+            <div class="agent-card ds-card">
+              <div class="ac-dot" style="background:#a855f7"></div>
+              <div class="ac-name">DeepSeek Chat</div>
+              <div class="ac-desc">Technical and systematic. Focuses on execution risk and edge cases.</div>
+              <div class="ac-status" id="acs-deepseek">CHECKING…</div>
+            </div>
+          </div>
         </div>
-        <div class="agent-node" id="node-gemini" data-agent="gemini">
-          <div class="an-ring"></div>
-          <div class="an-core">GM</div>
-          <div class="an-label">GEMINI</div>
+      </section>
+
+      <!-- ▓▓ MEMORY VIEW ▓▓ -->
+      <section class="view" id="view-memory">
+        <div class="placeholder-view">
+          <div class="pv-icon">🧠</div>
+          <div class="pv-title">MEMORY SYSTEM</div>
+          <div class="pv-sub">Persistent context across sessions — coming in v4.5</div>
+          <div class="memory-stats">
+            <div class="mstat"><span id="mem-msgs">0</span><small>Messages</small></div>
+            <div class="mstat"><span id="mem-sessions">1</span><small>Sessions</small></div>
+            <div class="mstat"><span id="mem-days">1</span><small>Days Active</small></div>
+          </div>
         </div>
-        <div class="agent-node" id="node-deepseek" data-agent="deepseek">
-          <div class="an-ring"></div>
-          <div class="an-core">DS</div>
-          <div class="an-label">DEEPSEEK</div>
+      </section>
+
+      <!-- ▓▓ MARKETS VIEW ▓▓ -->
+      <section class="view" id="view-markets">
+        <div class="placeholder-view">
+          <div class="pv-icon">📈</div>
+          <div class="pv-title">MARKETS DASHBOARD</div>
+          <div class="pv-sub">Live stock & crypto data integration — coming in v4.5</div>
+          <div class="markets-placeholder-btns">
+            <button class="wlc-chip" data-prompt="Analyze NVDA stock outlook for Q4 2025">Ask about NVDA</button>
+            <button class="wlc-chip" data-prompt="Should I buy Bitcoin right now? Give a full analysis">BTC Analysis</button>
+            <button class="wlc-chip" data-prompt="Best S&P 500 ETFs to buy in 2025">S&P 500 ETFs</button>
+          </div>
         </div>
-        <div class="agent-node judge-node" id="node-judge">
-          <div class="an-ring"></div>
-          <div class="an-core">AI</div>
-          <div class="an-label">GPT-4o JUDGE</div>
-        </div>
+      </section>
 
-        <!-- Idle prompt -->
-        <div class="neural-idle" id="neural-idle">
-          <div class="ni-text">NETWORK IDLE</div>
-          <div class="ni-sub">Submit a question to activate agents</div>
-        </div>
-      </div>
+    </div><!-- /views -->
+  </div><!-- /main-wrap -->
+</div><!-- /app -->
 
-      <!-- Debate results panel -->
-      <div class="debate-results" id="debate-results">
-        <!-- Cards injected by JS -->
-      </div>
-
-      <!-- Input -->
-      <div class="input-dock debate-dock">
-        <input id="debate-input" class="msg-input" type="text" placeholder="Pose a question — 'Will BTC rise?', 'Validate this idea…'" autocomplete="off" spellcheck="false"/>
-        <button class="send-dock-btn" id="debate-send-btn">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="1" x2="9" y2="11"/><polygon points="19 1 12 19 9 11 1 9 19 1"/></svg>
-        </button>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- MOBILE BOTTOM NAV -->
-  <div class="bottom-nav" id="bottom-nav">
-    <button class="bn-btn active" data-view="chat">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 12a2 2 0 01-2 2H6l-3 3V4a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-      <span>CHAT</span>
-    </button>
-    <button class="bn-btn" data-view="debate">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>
-      <span>DEBATE</span>
-    </button>
-    <button class="bn-btn" id="bn-settings">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="2.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"/></svg>
-      <span>SETTINGS</span>
-    </button>
-  </div>
+<!-- MOBILE BOTTOM NAV -->
+<div class="mobile-nav" id="mobile-nav">
+  <button class="mn-btn active" data-view="chat">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>Chat</span>
+  </button>
+  <button class="mn-btn" data-view="debate">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    <span>Debate</span>
+  </button>
+  <button class="mn-btn" data-view="voice">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+    <span>Voice</span>
+  </button>
+  <button class="mn-btn" data-view="agents">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    <span>Agents</span>
+  </button>
+  <button class="mn-btn" id="mn-settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-2.82-1.17l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9 1.65 1.65 0 0 0 4.27 7.18l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>Settings</span>
+  </button>
 </div>
 
-<!-- ╔══════════════════════════════════╗
-     ║  MODAL — SETTINGS               ║
-     ╚══════════════════════════════════╝ -->
+<!-- SETTINGS MODAL -->
 <div class="modal-bg hidden" id="modal-settings">
   <div class="modal">
     <div class="modal-hdr">
-      <span>SYSTEM SETTINGS</span>
-      <button class="modal-x" id="settings-close">✕</button>
+      <div class="modal-title">SYSTEM SETTINGS</div>
+      <button class="modal-x" id="modal-close">✕</button>
     </div>
     <div class="modal-body">
-      <div class="modal-note">
-        API keys live in <code>.env</code> on your backend.<br/>
-        Never paste them into frontend files.
-      </div>
+      <div class="modal-note">API keys live in <code>.env</code> on your backend only. Never in frontend files.</div>
       <label class="ml">BACKEND URL</label>
-      <input type="text" id="set-backend" class="mi" placeholder="http://localhost:3000"/>
+      <input class="mi" type="text" id="set-backend" placeholder="http://localhost:3000"/>
       <label class="ml">DEFAULT MODEL</label>
-      <select id="set-model" class="mi">
+      <select class="mi" id="set-model">
         <option value="openai">OpenAI GPT-4o</option>
         <option value="claude">Claude 3.5 Sonnet</option>
         <option value="gemini">Gemini 1.5 Pro</option>
         <option value="deepseek">DeepSeek Chat</option>
       </select>
       <label class="ml">YOUR NAME</label>
-      <input type="text" id="set-name" class="mi" placeholder="Mr. Kritesh" value="Mr. Kritesh"/>
-      <label class="ml toggle-row-label">STAY LOGGED IN
-        <label class="toggle-sw sm">
-          <input type="checkbox" id="set-stay" checked/>
-          <span class="tsw-track"><span class="tsw-thumb"></span></span>
-        </label>
+      <input class="mi" type="text" id="set-name" placeholder="Mr. Kritesh"/>
+      <label class="ml row-label">STAY LOGGED IN
+        <label class="tog sm"><input type="checkbox" id="set-stay" checked/><span class="tog-track"><span class="tog-thumb"></span></span></label>
       </label>
     </div>
     <div class="modal-ftr">
-      <button class="mbtn cancel" id="settings-cancel">CANCEL</button>
-      <button class="mbtn save" id="settings-save">SAVE</button>
+      <button class="mbtn cancel" id="modal-cancel">CANCEL</button>
+      <button class="mbtn save" id="modal-save">SAVE SETTINGS</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
+<!-- TOAST CONTAINER -->
 <div id="toasts" class="toasts"></div>
 
 <script src="script.js"></script>
