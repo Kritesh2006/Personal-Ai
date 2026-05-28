@@ -1,7 +1,7 @@
 <!--
-  ARIA SYSTEM v4
-  Created by Kritesh Dhungel © 2025
-  Unauthorized copying or redistribution prohibited.
+  ARIA SYSTEM v5
+  © Kritesh Dhungel 2025 — All Rights Reserved
+  Unauthorized redistribution prohibited.
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -11,424 +11,560 @@
 <title>ARIA — K:D Intelligence System</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<!-- ═══════════════════════════
+<!-- Global atmospheric overlays -->
+<div class="atmo-scanlines" aria-hidden="true"></div>
+<div class="atmo-vignette"  aria-hidden="true"></div>
+<canvas id="atmo-particles" aria-hidden="true"></canvas>
+
+<!-- ══════════════════════════════════════════
      BOOT SCREEN
-═══════════════════════════ -->
-<div id="boot" class="screen boot-screen active">
+══════════════════════════════════════════ -->
+<div id="s-boot" class="screen active">
   <canvas id="boot-canvas"></canvas>
-  <div class="boot-content">
-    <div class="boot-kd">K:D</div>
-    <div class="boot-bar-wrap"><div class="boot-bar" id="boot-bar"></div></div>
-    <div class="boot-logs" id="boot-logs"></div>
-    <div class="boot-pct" id="boot-pct">0%</div>
+  <div class="boot-ui">
+    <div class="boot-logo-wrap">
+      <div class="boot-kd-sig">
+        <span class="kd-k">K</span><span class="kd-colon">:</span><span class="kd-d">D</span>
+      </div>
+      <div class="boot-system-title">ARIA INTELLIGENCE SYSTEM</div>
+      <div class="boot-build">BUILD v5.0 · PERSONAL AI</div>
+    </div>
+    <div class="boot-progress-ring">
+      <svg viewBox="0 0 120 120" class="bpr-svg">
+        <circle cx="60" cy="60" r="52" class="bpr-track"/>
+        <circle cx="60" cy="60" r="52" class="bpr-fill" id="bpr-fill"/>
+        <circle cx="60" cy="60" r="40" class="bpr-inner"/>
+      </svg>
+      <div class="bpr-pct" id="bpr-pct">0</div>
+    </div>
+    <div class="boot-log-stream" id="boot-log"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════
+<!-- ══════════════════════════════════════════
      PIN SCREEN
-═══════════════════════════ -->
-<div id="pin-screen" class="screen">
+══════════════════════════════════════════ -->
+<div id="s-pin" class="screen">
   <canvas id="pin-canvas"></canvas>
-  <div class="pin-card">
-    <div class="pin-card-glow"></div>
-    <div class="pin-kd">K:D</div>
-    <div class="pin-title">ARIA SYSTEM</div>
-    <div class="pin-sub">SECURE ACCESS REQUIRED</div>
-    <div class="pin-dots" id="pin-dots">
-      <div class="pdot" id="pd0"></div>
-      <div class="pdot" id="pd1"></div>
-      <div class="pdot" id="pd2"></div>
-      <div class="pdot" id="pd3"></div>
+  <div class="pin-ui">
+    <div class="pin-holo-ring">
+      <div class="phr-r phr-r1"></div>
+      <div class="phr-r phr-r2"></div>
+      <div class="phr-r phr-r3"></div>
+      <div class="pin-kd-sig">
+        <span class="kd-k">K</span><span class="kd-colon">:</span><span class="kd-d">D</span>
+      </div>
     </div>
-    <div class="pin-grid">
-      <button class="pkey" data-v="1">1</button>
-      <button class="pkey" data-v="2">2</button>
-      <button class="pkey" data-v="3">3</button>
-      <button class="pkey" data-v="4">4</button>
-      <button class="pkey" data-v="5">5</button>
-      <button class="pkey" data-v="6">6</button>
-      <button class="pkey" data-v="7">7</button>
-      <button class="pkey" data-v="8">8</button>
-      <button class="pkey" data-v="9">9</button>
-      <button class="pkey pkey-del" id="pkey-del">⌫</button>
-      <button class="pkey" data-v="0">0</button>
-      <button class="pkey pkey-ok" id="pkey-ok">▶</button>
+    <div class="pin-label">ARIA SECURE ACCESS</div>
+    <div class="pin-sublabel">ENTER ACCESS CODE</div>
+    <div class="pin-segments" id="pin-segs">
+      <div class="pseg" id="ps0"></div>
+      <div class="pseg" id="ps1"></div>
+      <div class="pseg" id="ps2"></div>
+      <div class="pseg" id="ps3"></div>
     </div>
-    <div class="pin-error hidden" id="pin-error">⚠ ACCESS DENIED</div>
+    <div class="pin-pad">
+      <button class="pk" data-v="1">1</button><button class="pk" data-v="2">2</button><button class="pk" data-v="3">3</button>
+      <button class="pk" data-v="4">4</button><button class="pk" data-v="5">5</button><button class="pk" data-v="6">6</button>
+      <button class="pk" data-v="7">7</button><button class="pk" data-v="8">8</button><button class="pk" data-v="9">9</button>
+      <button class="pk pk-del" id="pk-del">⌫</button>
+      <button class="pk" data-v="0">0</button>
+      <button class="pk pk-ok" id="pk-ok">▶</button>
+    </div>
+    <div class="pin-err hidden" id="pin-err">⚠ ACCESS DENIED — INVALID CODE</div>
   </div>
 </div>
 
-<!-- ═══════════════════════════
+<!-- ══════════════════════════════════════════
      CONNECT SCREEN
-═══════════════════════════ -->
-<div id="conn-screen" class="screen">
+══════════════════════════════════════════ -->
+<div id="s-conn" class="screen">
   <canvas id="conn-canvas"></canvas>
-  <div class="conn-box">
-    <div class="conn-kd">K:D</div>
-    <div class="conn-ring-outer"><div class="conn-ring-inner"></div></div>
+  <div class="conn-ui">
+    <div class="conn-orb">
+      <div class="corb-ring cr1"></div><div class="corb-ring cr2"></div><div class="corb-ring cr3"></div>
+      <div class="corb-core">
+        <span class="kd-k">K</span><span class="kd-colon">:</span><span class="kd-d">D</span>
+      </div>
+    </div>
     <div class="conn-steps" id="conn-steps">
-      <div class="cstep" id="cs0"><span class="cs-dot"></span><span>AUTHENTICATING</span></div>
-      <div class="cstep" id="cs1"><span class="cs-dot"></span><span>BACKEND LINK</span></div>
-      <div class="cstep" id="cs2"><span class="cs-dot"></span><span>LOADING ENGINES</span></div>
-      <div class="cstep" id="cs3"><span class="cs-dot"></span><span>ARIA READY</span></div>
+      <div class="cst" id="cst0"><span class="cst-dot"></span><span class="cst-txt">AUTHENTICATING CREDENTIALS</span></div>
+      <div class="cst" id="cst1"><span class="cst-dot"></span><span class="cst-txt">ESTABLISHING SECURE BACKEND LINK</span></div>
+      <div class="cst" id="cst2"><span class="cst-dot"></span><span class="cst-txt">LOADING AI INTELLIGENCE ENGINES</span></div>
+      <div class="cst" id="cst3"><span class="cst-dot"></span><span class="cst-txt">ARIA FULLY OPERATIONAL</span></div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════
-     MAIN DASHBOARD
-═══════════════════════════ -->
-<div id="app" class="screen app-screen">
+<!-- ══════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════ -->
+<div id="s-app" class="screen app-screen">
 
-  <!-- LEFT SIDEBAR -->
+  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <div class="sb-logo">
-      <span class="sb-kd">K:D</span>
+    <div class="sb-header">
+      <div class="sb-sig">
+        <span class="kd-k">K</span><span class="kd-colon">:</span><span class="kd-d">D</span>
+      </div>
+      <div class="sb-sig-label">ARIA</div>
     </div>
+
     <nav class="sb-nav">
-      <button class="sb-btn active" data-view="chat" title="Chat">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <span>Chat</span>
+      <button class="sbn active" data-view="chat">
+        <span class="sbn-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 12a2 2 0 01-2 2H6l-4 4V5a2 2 0 012-2h11a2 2 0 012 2z"/></svg>
+        </span>
+        <span class="sbn-text">Chat</span>
+        <span class="sbn-glow"></span>
       </button>
-      <button class="sb-btn" data-view="debate" title="AI Debate">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-        <span>Debate</span>
+      <button class="sbn" data-view="debate">
+        <span class="sbn-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="10,2 18,7 18,13 10,18 2,13 2,7"/><circle cx="10" cy="10" r="2"/></svg>
+        </span>
+        <span class="sbn-text">Debate</span>
+        <span class="sbn-badge">AI</span>
+        <span class="sbn-glow"></span>
       </button>
-      <button class="sb-btn" data-view="voice" title="Voice">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        <span>Voice</span>
+      <button class="sbn" data-view="voice">
+        <span class="sbn-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 2a3 3 0 00-3 3v6a3 3 0 006 0V5a3 3 0 00-3-3z"/><path d="M16 9v1a6 6 0 01-12 0V9"/><line x1="10" y1="16" x2="10" y2="19"/><line x1="7" y1="19" x2="13" y2="19"/></svg>
+        </span>
+        <span class="sbn-text">Voice</span>
+        <span class="sbn-glow"></span>
       </button>
-      <button class="sb-btn" data-view="agents" title="Agents">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span>Agents</span>
+      <button class="sbn" data-view="agents">
+        <span class="sbn-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="6" r="3"/><circle cx="14" cy="10" r="2.5"/><path d="M1 17c0-3 3-5 6-5"/><path d="M11 17c0-2.5 2-4 5-4"/></svg>
+        </span>
+        <span class="sbn-text">Agents</span>
+        <span class="sbn-glow"></span>
       </button>
-      <button class="sb-btn" data-view="memory" title="Memory">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-        <span>Memory</span>
+      <button class="sbn" data-view="memory">
+        <span class="sbn-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="10" cy="5" rx="8" ry="3"/><path d="M18 10c0 1.66-3.58 3-8 3S2 11.66 2 10"/><path d="M2 5v10c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/></svg>
+        </span>
+        <span class="sbn-text">Memory</span>
+        <span class="sbn-glow"></span>
       </button>
-      <button class="sb-btn" data-view="markets" title="Markets">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-        <span>Markets</span>
+      <button class="sbn" data-view="markets">
+        <span class="sbn-icon">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="2,14 6,8 10,11 14,5 18,9"/><polyline points="14,5 18,5 18,9"/></svg>
+        </span>
+        <span class="sbn-text">Markets</span>
+        <span class="sbn-glow"></span>
       </button>
     </nav>
-    <div class="sb-bottom">
-      <button class="sb-btn" id="sb-settings" title="Settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        <span>Settings</span>
+
+    <div class="sb-footer">
+      <button class="sbn sbn-sm" id="sb-settings">
+        <span class="sbn-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="3"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"/></svg></span>
+        <span class="sbn-text">Settings</span>
+        <span class="sbn-glow"></span>
       </button>
-      <button class="sb-btn sb-lock" id="sb-lock" title="Lock">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <span>Lock</span>
+      <button class="sbn sbn-sm sbn-danger" id="sb-lock">
+        <span class="sbn-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="9" width="14" height="9" rx="1.5"/><path d="M7 9V6a3 3 0 016 0v3"/></svg></span>
+        <span class="sbn-text">Lock</span>
+        <span class="sbn-glow"></span>
       </button>
+      <div class="sb-copyright">© Kritesh Dhungel · ARIA</div>
     </div>
   </aside>
 
-  <!-- MAIN AREA -->
-  <div class="main-wrap">
+  <!-- MAIN CONTENT -->
+  <div class="app-main">
 
-    <!-- TOP BAR -->
-    <header class="topbar">
-      <div class="tb-left">
-        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
-        <div class="tb-kd">K:D</div>
-        <div class="tb-divider"></div>
-        <div class="tb-aria-label">ARIA</div>
-        <div class="tb-version">v4.0</div>
-      </div>
-      <div class="tb-center" id="tb-model-display">
-        <div class="model-chip" id="model-chip">
-          <span class="mc-dot" id="mc-dot"></span>
-          <span id="mc-label">GPT-4o</span>
-        </div>
-      </div>
-      <div class="tb-right">
-        <div class="tb-status" id="tb-status">
-          <div class="ts-dot" id="ts-dot"></div>
-          <span id="ts-label">OFFLINE</span>
-        </div>
-        <button class="tb-btn" id="tb-clear" title="Clear chat">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+    <!-- TOP NAV BAR -->
+    <header class="topnav">
+      <div class="tn-left">
+        <button class="tn-burger" id="tn-burger">
+          <span></span><span></span><span></span>
         </button>
-        <select class="model-select" id="model-select">
-          <option value="openai">GPT-4o</option>
-          <option value="claude">Claude 3.5</option>
-          <option value="gemini">Gemini 1.5</option>
-          <option value="deepseek">DeepSeek</option>
-        </select>
+        <div class="tn-kd-mobile">
+          <span class="kd-k">K</span><span class="kd-colon">:</span><span class="kd-d">D</span>
+        </div>
+        <div class="tn-breadcrumb" id="tn-breadcrumb">CHAT</div>
+      </div>
+      <div class="tn-center">
+        <div class="tn-model-chip" id="tn-model-chip">
+          <span class="tmc-orb" id="tmc-orb"></span>
+          <span class="tmc-label" id="tmc-label">GPT-4o</span>
+          <span class="tmc-caret">▾</span>
+          <!-- Dropdown -->
+          <div class="model-dropdown" id="model-dropdown">
+            <div class="md-item active" data-model="openai" data-label="GPT-4o">
+              <span class="md-dot" style="background:#10d07a"></span>GPT-4o<span class="md-tag">OpenAI</span>
+            </div>
+            <div class="md-item" data-model="claude" data-label="Claude 3.5">
+              <span class="md-dot" style="background:#f5a623"></span>Claude 3.5<span class="md-tag">Anthropic</span>
+            </div>
+            <div class="md-item" data-model="gemini" data-label="Gemini 1.5">
+              <span class="md-dot" style="background:#4d9fff"></span>Gemini 1.5<span class="md-tag">Google</span>
+            </div>
+            <div class="md-item" data-model="deepseek" data-label="DeepSeek">
+              <span class="md-dot" style="background:#b060ff"></span>DeepSeek<span class="md-tag">DeepSeek AI</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tn-right">
+        <div class="tn-status" id="tn-status">
+          <span class="tns-dot" id="tns-dot"></span>
+          <span class="tns-label" id="tns-label">CONNECTING</span>
+        </div>
+        <button class="tn-clear-btn" id="tn-clear" title="Clear chat">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="2,4 4,4 16,4"/><path d="M14 4l-.7 10a2 2 0 01-2 2H6.7a2 2 0 01-2-2L4 4"/><path d="M7 7v5M11 7v5"/></svg>
+        </button>
       </div>
     </header>
 
-    <!-- FALLBACK BANNER -->
-    <div class="fallback-banner hidden" id="fallback-banner">
-      <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zM7 4h2v5H7V4zm0 6h2v2H7v-2z"/></svg>
-      Cloud AI limit reached — local fallback active. Basic math, commands & offline tools work.
-      <button id="banner-close">✕</button>
+    <!-- FALLBACK WARNING -->
+    <div class="fallback-bar hidden" id="fallback-bar">
+      <div class="fb-icon">◈</div>
+      <div class="fb-text">Cloud AI unavailable — Local intelligence active. Math, commands & analysis work offline.</div>
+      <button class="fb-close" id="fb-close">✕</button>
     </div>
 
-    <!-- VIEWS CONTAINER -->
-    <div class="views" id="views">
+    <!-- VIEWS -->
+    <div class="views-wrap" id="views-wrap">
 
-      <!-- ▓▓ CHAT VIEW ▓▓ -->
+      <!-- ████ CHAT VIEW ████ -->
       <section class="view active" id="view-chat">
-        <!-- WELCOME STATE -->
-        <div class="welcome" id="welcome">
-          <canvas id="welcome-canvas"></canvas>
-          <div class="wlc-inner">
-            <div class="wlc-kd">K:D</div>
+        <div class="chat-welcome" id="chat-welcome">
+          <canvas id="wlc-canvas"></canvas>
+          <div class="wlc-content">
+            <div class="wlc-kd">
+              <span class="kd-k">K</span><span class="kd-colon">:</span><span class="kd-d">D</span>
+            </div>
             <div class="wlc-title">ARIA INTELLIGENCE</div>
-            <div class="wlc-sub">Autonomous Reasoning & Intelligent AI Assistant</div>
-            <div class="wlc-chips">
-              <button class="wlc-chip" data-prompt="Analyze Tesla stock outlook for next quarter">📈 Stock Analysis</button>
-              <button class="wlc-chip" data-prompt="Validate this SaaS business idea for me">🚀 Business Idea</button>
-              <button class="wlc-chip" data-prompt="Build a marketing strategy for a new product launch">📣 Marketing Strategy</button>
-              <button class="wlc-chip" data-prompt="What are the best investment strategies for 2025?">💰 Investment Research</button>
-            </div>
-          </div>
-        </div>
-        <!-- CHAT FEED -->
-        <div class="chat-feed hidden" id="chat-feed"></div>
-        <!-- INPUT -->
-        <div class="input-bar">
-          <button class="ib-mic" id="ib-mic" title="Voice input">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
-          </button>
-          <input id="chat-input" class="chat-input" type="text" placeholder="Ask ARIA anything — markets, strategy, decisions, math…" autocomplete="off" spellcheck="false"/>
-          <button class="ib-send" id="send-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          </button>
-        </div>
-        <div class="input-disclaimer">Research & analysis only — not financial advice</div>
-      </section>
-
-      <!-- ▓▓ DEBATE VIEW ▓▓ -->
-      <section class="view" id="view-debate">
-        <div class="debate-layout">
-          <!-- Network panel (always visible) -->
-          <div class="network-panel" id="network-panel">
-            <div class="np-header">
-              <span class="np-title">AI NEURAL NETWORK</span>
-              <div class="debate-toggle-wrap">
-                <span class="dt-lbl">MODE</span>
-                <label class="tog">
-                  <input type="checkbox" id="debate-tog" checked/>
-                  <span class="tog-track"><span class="tog-thumb"></span></span>
-                </label>
-                <span id="dt-status" class="dt-status on">ACTIVE</span>
-              </div>
-            </div>
-            <!-- THE NETWORK -->
-            <div class="network-stage" id="network-stage">
-              <canvas id="net-canvas"></canvas>
-              <!-- User node -->
-              <div class="node user-node" id="node-user">
-                <div class="node-ring"></div>
-                <div class="node-body">
-                  <span class="node-icon">👤</span>
-                </div>
-                <div class="node-label">USER</div>
-              </div>
-              <!-- AI Agent nodes -->
-              <div class="node agent-node gpt-node" id="node-gpt">
-                <div class="node-ring"></div>
-                <div class="node-body">GPT</div>
-                <div class="node-label">OpenAI</div>
-                <div class="node-status" id="ns-gpt"></div>
-              </div>
-              <div class="node agent-node claude-node" id="node-claude">
-                <div class="node-ring"></div>
-                <div class="node-body">CLD</div>
-                <div class="node-label">Claude</div>
-                <div class="node-status" id="ns-claude"></div>
-              </div>
-              <div class="node agent-node gemini-node" id="node-gemini">
-                <div class="node-ring"></div>
-                <div class="node-body">GEM</div>
-                <div class="node-label">Gemini</div>
-                <div class="node-status" id="ns-gemini"></div>
-              </div>
-              <div class="node agent-node deepseek-node" id="node-deepseek">
-                <div class="node-ring"></div>
-                <div class="node-body">DSK</div>
-                <div class="node-label">DeepSeek</div>
-                <div class="node-status" id="ns-deepseek"></div>
-              </div>
-              <!-- Judge node -->
-              <div class="node judge-node" id="node-judge">
-                <div class="node-ring"></div>
-                <div class="node-ring node-ring2"></div>
-                <div class="node-body">⚖</div>
-                <div class="node-label">JUDGE</div>
-              </div>
-              <!-- Idle overlay -->
-              <div class="network-idle" id="network-idle">
-                <div class="ni-icon">◈</div>
-                <div class="ni-text">Enter a question to activate the debate network</div>
-              </div>
-            </div>
-            <!-- Debate input -->
-            <div class="debate-input-wrap">
-              <input id="debate-input" class="chat-input" type="text" placeholder="Pose a strategic question — markets, decisions, business…" autocomplete="off"/>
-              <button class="ib-send" id="debate-send">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <div class="wlc-tagline">Autonomous Reasoning & Intelligent AI Assistant</div>
+            <div class="wlc-grid">
+              <button class="wlc-card" data-prompt="Analyze Tesla stock outlook for Q4 2025 — bull and bear case">
+                <div class="wlcc-icon">📈</div>
+                <div class="wlcc-label">Stock Analysis</div>
+                <div class="wlcc-desc">Market research & outlook</div>
+              </button>
+              <button class="wlc-card" data-prompt="Validate this SaaS idea: AI-powered personal finance tracker">
+                <div class="wlcc-icon">🚀</div>
+                <div class="wlcc-label">Business Idea</div>
+                <div class="wlcc-desc">Validate before you build</div>
+              </button>
+              <button class="wlc-card" data-prompt="Build a complete go-to-market strategy for a new mobile app">
+                <div class="wlcc-icon">📣</div>
+                <div class="wlcc-label">Marketing Strategy</div>
+                <div class="wlcc-desc">Launch & growth planning</div>
+              </button>
+              <button class="wlc-card" data-prompt="What are the best investment strategies for someone in their 20s?">
+                <div class="wlcc-icon">💰</div>
+                <div class="wlcc-label">Investment Research</div>
+                <div class="wlcc-desc">Research only — not advice</div>
               </button>
             </div>
           </div>
-          <!-- Results panel -->
-          <div class="debate-results-panel" id="debate-results-panel">
-            <div class="drp-header">AGENT RESPONSES</div>
-            <div class="debate-cards" id="debate-cards">
-              <div class="drp-empty" id="drp-empty">
-                <div class="drp-empty-icon">◈</div>
-                <div>Responses will appear here after debate</div>
+        </div>
+        <div class="chat-feed hidden" id="chat-feed"></div>
+        <div class="chat-input-zone">
+          <div class="ciz-wrap">
+            <button class="ciz-mic" id="ciz-mic">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 2a3 3 0 00-3 3v5a3 3 0 006 0V5a3 3 0 00-3-3z"/><path d="M16 9v1a6 6 0 01-12 0V9"/><line x1="10" y1="15" x2="10" y2="18"/></svg>
+            </button>
+            <input id="chat-input" class="ciz-input" type="text" placeholder="Message ARIA — markets, strategy, decisions, or anything…" autocomplete="off" spellcheck="false"/>
+            <button class="ciz-send" id="ciz-send">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="2" x2="9" y2="11"/><polygon points="18 2 12 18 9 11 2 8 18 2"/></svg>
+            </button>
+          </div>
+          <div class="ciz-disclaimer">Research & analysis only — not financial advice · © Kritesh Dhungel</div>
+        </div>
+      </section>
+
+      <!-- ████ DEBATE VIEW ████ -->
+      <section class="view" id="view-debate">
+        <div class="debate-scene">
+          <!-- Neural network FULL area -->
+          <div class="neural-stage" id="neural-stage">
+            <canvas id="neural-canvas"></canvas>
+
+            <!-- Nodes — positioned by JS -->
+            <div class="nn-node user-nd"      id="nd-user">
+              <div class="nnd-ring"></div><div class="nnd-ring nnd-ring2"></div>
+              <div class="nnd-body"><div class="nnd-avatar">👤</div></div>
+              <div class="nnd-label">USER</div><div class="nnd-status" id="nds-user"></div>
+            </div>
+            <div class="nn-node gpt-nd"       id="nd-gpt">
+              <div class="nnd-ring"></div><div class="nnd-ring nnd-ring2"></div>
+              <div class="nnd-body">GPT</div>
+              <div class="nnd-label">OpenAI</div><div class="nnd-status" id="nds-gpt"></div>
+            </div>
+            <div class="nn-node claude-nd"    id="nd-claude">
+              <div class="nnd-ring"></div><div class="nnd-ring nnd-ring2"></div>
+              <div class="nnd-body">CLD</div>
+              <div class="nnd-label">Claude</div><div class="nnd-status" id="nds-claude"></div>
+            </div>
+            <div class="nn-node gemini-nd"    id="nd-gemini">
+              <div class="nnd-ring"></div><div class="nnd-ring nnd-ring2"></div>
+              <div class="nnd-body">GEM</div>
+              <div class="nnd-label">Gemini</div><div class="nnd-status" id="nds-gemini"></div>
+            </div>
+            <div class="nn-node deepseek-nd"  id="nd-deepseek">
+              <div class="nnd-ring"></div><div class="nnd-ring nnd-ring2"></div>
+              <div class="nnd-body">DSK</div>
+              <div class="nnd-label">DeepSeek</div><div class="nnd-status" id="nds-deepseek"></div>
+            </div>
+            <div class="nn-node judge-nd"     id="nd-judge">
+              <div class="nnd-ring"></div><div class="nnd-ring nnd-ring2"></div><div class="nnd-ring nnd-ring3"></div>
+              <div class="nnd-body"><div class="nnd-judge-icon">⚖</div></div>
+              <div class="nnd-label">FINAL JUDGE</div><div class="nnd-status" id="nds-judge"></div>
+            </div>
+
+            <!-- Status overlay -->
+            <div class="neural-status-bar" id="neural-status-bar">
+              <div class="nsb-indicator" id="nsb-indicator">
+                <span class="nsb-dot"></span>
+                <span class="nsb-text" id="nsb-text">NETWORK IDLE — Enter a question below</span>
+              </div>
+            </div>
+
+            <!-- Idle overlay -->
+            <div class="neural-idle-overlay" id="neural-idle">
+              <div class="nio-hex">◈</div>
+              <div class="nio-title">AI DEBATE NETWORK</div>
+              <div class="nio-sub">Enter a strategic question to activate agents</div>
+              <div class="nio-hint">Markets · Business · Strategy · Decisions</div>
+            </div>
+          </div>
+
+          <!-- Side panel for responses -->
+          <div class="debate-panel" id="debate-panel">
+            <div class="dp-header">
+              <div class="dph-title">AGENT RESPONSES</div>
+              <div class="dph-badge" id="dph-badge">STANDBY</div>
+            </div>
+            <div class="dp-scroll" id="dp-scroll">
+              <div class="dp-empty" id="dp-empty">
+                <div class="dpe-icon">◈</div>
+                <div class="dpe-text">Responses appear here as each agent processes</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Debate input -->
+        <div class="debate-input-bar">
+          <div class="dib-wrap">
+            <div class="dib-toggle-wrap">
+              <label class="dib-toggle">
+                <input type="checkbox" id="debate-toggle" checked/>
+                <span class="dib-track"><span class="dib-thumb"></span></span>
+              </label>
+              <span class="dib-mode-label" id="dib-mode">DEBATE ACTIVE</span>
+            </div>
+            <input id="debate-input" class="ciz-input dib-input" type="text" placeholder="Pose a strategic question — markets, decisions, analysis…" autocomplete="off"/>
+            <button class="ciz-send" id="debate-send">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="2" x2="9" y2="11"/><polygon points="18 2 12 18 9 11 2 8 18 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ████ VOICE VIEW ████ -->
+      <section class="view" id="view-voice">
+        <div class="voice-scene">
+          <canvas id="voice-canvas"></canvas>
+          <div class="voice-content">
+            <div class="vc-ring-outer">
+              <div class="vc-ring vcr1"></div>
+              <div class="vc-ring vcr2"></div>
+              <div class="vc-ring vcr3"></div>
+              <div class="vc-mic-btn" id="vc-mic-btn">
+                <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.8" width="36" height="36"><path d="M20 5a5 5 0 00-5 5v10a5 5 0 0010 0V10a5 5 0 00-5-5z"/><path d="M32 18v2a12 12 0 01-24 0v-2"/><line x1="20" y1="30" x2="20" y2="37"/><line x1="14" y1="37" x2="26" y2="37"/></svg>
+              </div>
+            </div>
+            <div class="vc-status" id="vc-status">CLICK TO SPEAK</div>
+            <canvas id="vc-wave-canvas" class="vc-wave"></canvas>
+            <div class="vc-transcript" id="vc-transcript">Say something and ARIA will respond…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ████ AGENTS VIEW ████ -->
+      <section class="view" id="view-agents">
+        <div class="agents-scene">
+          <div class="scene-header">
+            <div class="sh-title">AI AGENT NETWORK</div>
+            <div class="sh-sub">Four intelligence systems, one unified verdict</div>
+          </div>
+          <div class="agents-grid-4">
+            <div class="ag-card gpt-card">
+              <div class="agc-beam"></div>
+              <div class="agc-top">
+                <div class="agc-orb gpt-orb">GPT</div>
+                <div class="agc-status-badge" id="ags-gpt">CHECKING</div>
+              </div>
+              <div class="agc-name">OpenAI GPT-4o</div>
+              <div class="agc-role">STRATEGIST · FINALIZER</div>
+              <div class="agc-desc">Flagship reasoning model. Best for complex multi-step analysis, final synthesis, and judgment calls.</div>
+              <div class="agc-specs">
+                <span>Context: 128k</span><span>Speed: Fast</span><span>Tier: Premium</span>
+              </div>
+            </div>
+            <div class="ag-card claude-card">
+              <div class="agc-beam"></div>
+              <div class="agc-top">
+                <div class="agc-orb claude-orb">CLD</div>
+                <div class="agc-status-badge" id="ags-claude">CHECKING</div>
+              </div>
+              <div class="agc-name">Anthropic Claude 3.5</div>
+              <div class="agc-role">CHALLENGER · RISK ANALYST</div>
+              <div class="agc-desc">Strategic and nuanced. Excels at uncovering hidden risks, long-form reasoning, and adversarial thinking.</div>
+              <div class="agc-specs">
+                <span>Context: 200k</span><span>Speed: Fast</span><span>Tier: Premium</span>
+              </div>
+            </div>
+            <div class="ag-card gemini-card">
+              <div class="agc-beam"></div>
+              <div class="agc-top">
+                <div class="agc-orb gemini-orb">GEM</div>
+                <div class="agc-status-badge" id="ags-gemini">CHECKING</div>
+              </div>
+              <div class="agc-name">Google Gemini 1.5</div>
+              <div class="agc-role">VERIFIER · DATA ANALYST</div>
+              <div class="agc-desc">Data-driven and pattern-focused. Strong at quantitative analysis, trend verification, and multimodal reasoning.</div>
+              <div class="agc-specs">
+                <span>Context: 1M</span><span>Speed: Fast</span><span>Tier: Premium</span>
+              </div>
+            </div>
+            <div class="ag-card ds-card">
+              <div class="agc-beam"></div>
+              <div class="agc-top">
+                <div class="agc-orb ds-orb">DSK</div>
+                <div class="agc-status-badge" id="ags-deepseek">CHECKING</div>
+              </div>
+              <div class="agc-name">DeepSeek Chat</div>
+              <div class="agc-role">CALCULATOR · EDGE CASES</div>
+              <div class="agc-desc">Technical and systematic. Focuses on execution risk, edge cases, and mathematical precision.</div>
+              <div class="agc-specs">
+                <span>Context: 64k</span><span>Speed: Fast</span><span>Tier: Standard</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ▓▓ VOICE VIEW ▓▓ -->
-      <section class="view" id="view-voice">
-        <div class="placeholder-view">
-          <div class="pv-icon voice-icon-anim" id="voice-icon-anim">
-            <svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="1.5" width="60" height="60"><path d="M30 5a8 8 0 0 0-8 8v14a8 8 0 0 0 16 0V13a8 8 0 0 0-8-8z"/><path d="M48 27v3a18 18 0 0 1-36 0v-3"/><line x1="30" y1="48" x2="30" y2="55"/><line x1="22" y1="55" x2="38" y2="55"/></svg>
-          </div>
-          <div class="pv-title">VOICE COMMAND</div>
-          <div class="pv-sub">Click mic to start listening · ARIA responds with voice</div>
-          <button class="pv-mic-btn" id="voice-start-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-            START LISTENING
-          </button>
-          <div class="pv-transcript" id="voice-transcript"></div>
-        </div>
-      </section>
-
-      <!-- ▓▓ AGENTS VIEW ▓▓ -->
-      <section class="view" id="view-agents">
-        <div class="agents-view">
-          <div class="view-section-title">AI AGENTS</div>
-          <div class="agents-grid">
-            <div class="agent-card gpt-card">
-              <div class="ac-dot" style="background:#10a37f"></div>
-              <div class="ac-name">OpenAI GPT-4o</div>
-              <div class="ac-desc">Flagship reasoning model. Best for complex analysis and final judgments.</div>
-              <div class="ac-status" id="acs-gpt">CHECKING…</div>
-            </div>
-            <div class="agent-card claude-card">
-              <div class="ac-dot" style="background:#d97706"></div>
-              <div class="ac-name">Anthropic Claude 3.5</div>
-              <div class="ac-desc">Strategic and nuanced. Excels at long-form analysis and risk assessment.</div>
-              <div class="ac-status" id="acs-claude">CHECKING…</div>
-            </div>
-            <div class="agent-card gemini-card">
-              <div class="ac-dot" style="background:#4285f4"></div>
-              <div class="ac-name">Google Gemini 1.5</div>
-              <div class="ac-desc">Data-driven and trend-focused. Strong quantitative pattern recognition.</div>
-              <div class="ac-status" id="acs-gemini">CHECKING…</div>
-            </div>
-            <div class="agent-card ds-card">
-              <div class="ac-dot" style="background:#a855f7"></div>
-              <div class="ac-name">DeepSeek Chat</div>
-              <div class="ac-desc">Technical and systematic. Focuses on execution risk and edge cases.</div>
-              <div class="ac-status" id="acs-deepseek">CHECKING…</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ▓▓ MEMORY VIEW ▓▓ -->
+      <!-- ████ MEMORY VIEW ████ -->
       <section class="view" id="view-memory">
-        <div class="placeholder-view">
-          <div class="pv-icon">🧠</div>
-          <div class="pv-title">MEMORY SYSTEM</div>
-          <div class="pv-sub">Persistent context across sessions — coming in v4.5</div>
-          <div class="memory-stats">
-            <div class="mstat"><span id="mem-msgs">0</span><small>Messages</small></div>
-            <div class="mstat"><span id="mem-sessions">1</span><small>Sessions</small></div>
-            <div class="mstat"><span id="mem-days">1</span><small>Days Active</small></div>
+        <div class="memory-scene">
+          <canvas id="mem-canvas"></canvas>
+          <div class="mem-content">
+            <div class="scene-header">
+              <div class="sh-title">MEMORY VAULT</div>
+              <div class="sh-sub">Persistent intelligence across sessions</div>
+            </div>
+            <div class="mem-stats-row">
+              <div class="msr-card"><div class="msrc-val" id="mem-msgs">0</div><div class="msrc-lbl">Messages</div></div>
+              <div class="msr-card"><div class="msrc-val" id="mem-debates">0</div><div class="msrc-lbl">Debates</div></div>
+              <div class="msr-card"><div class="msrc-val" id="mem-days">1</div><div class="msrc-lbl">Days Active</div></div>
+              <div class="msr-card"><div class="msrc-val" id="mem-sessions">1</div><div class="msrc-lbl">Sessions</div></div>
+            </div>
+            <div class="mem-timeline" id="mem-timeline">
+              <div class="mem-empty-state">
+                <div class="mes-icon">🧠</div>
+                <div class="mes-text">Memory timeline will populate as you use ARIA</div>
+                <div class="mes-sub">Coming in v5.5 — full persistent memory</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- ▓▓ MARKETS VIEW ▓▓ -->
+      <!-- ████ MARKETS VIEW ████ -->
       <section class="view" id="view-markets">
-        <div class="placeholder-view">
-          <div class="pv-icon">📈</div>
-          <div class="pv-title">MARKETS DASHBOARD</div>
-          <div class="pv-sub">Live stock & crypto data integration — coming in v4.5</div>
-          <div class="markets-placeholder-btns">
-            <button class="wlc-chip" data-prompt="Analyze NVDA stock outlook for Q4 2025">Ask about NVDA</button>
-            <button class="wlc-chip" data-prompt="Should I buy Bitcoin right now? Give a full analysis">BTC Analysis</button>
-            <button class="wlc-chip" data-prompt="Best S&P 500 ETFs to buy in 2025">S&P 500 ETFs</button>
+        <div class="markets-scene">
+          <canvas id="mkt-canvas"></canvas>
+          <div class="mkt-content">
+            <div class="scene-header">
+              <div class="sh-title">MARKET INTELLIGENCE</div>
+              <div class="sh-sub">Live data integration — v5.5</div>
+            </div>
+            <div class="mkt-disclaimer">⚠ Research purposes only — not financial advice</div>
+            <div class="mkt-quick">
+              <div class="mktq-title">ASK ARIA ABOUT MARKETS</div>
+              <div class="mktq-chips" id="mktq-chips">
+                <button class="mktq-chip" data-prompt="Analyze NVIDIA stock — is it overvalued at current levels?">NVDA Analysis</button>
+                <button class="mktq-chip" data-prompt="Bitcoin price prediction for end of 2025 — bull case and bear case">BTC Outlook</button>
+                <button class="mktq-chip" data-prompt="Best ETFs for a long-term portfolio in 2025">Top ETFs 2025</button>
+                <button class="mktq-chip" data-prompt="Is the S&P 500 overvalued right now? Full bear case analysis">S&P 500 Bear Case</button>
+                <button class="mktq-chip" data-prompt="Compare gold vs Bitcoin as a store of value for the next decade">Gold vs BTC</button>
+                <button class="mktq-chip" data-prompt="Is Apple stock a good buy right now? Full analysis">AAPL Deep Dive</button>
+              </div>
+            </div>
+            <div class="mkt-chart-placeholder">
+              <div class="mcp-coming">
+                <div class="mcpc-icon">📈</div>
+                <div class="mcpc-text">Live chart integration coming in v5.5</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-    </div><!-- /views -->
-  </div><!-- /main-wrap -->
-</div><!-- /app -->
+    </div><!-- /views-wrap -->
+  </div><!-- /app-main -->
+</div><!-- /s-app -->
 
-<!-- MOBILE BOTTOM NAV -->
-<div class="mobile-nav" id="mobile-nav">
-  <button class="mn-btn active" data-view="chat">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <span>Chat</span>
-  </button>
-  <button class="mn-btn" data-view="debate">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-    <span>Debate</span>
-  </button>
-  <button class="mn-btn" data-view="voice">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-    <span>Voice</span>
-  </button>
-  <button class="mn-btn" data-view="agents">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-    <span>Agents</span>
-  </button>
-  <button class="mn-btn" id="mn-settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-2.82-1.17l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9 1.65 1.65 0 0 0 4.27 7.18l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    <span>Settings</span>
-  </button>
-</div>
+<!-- MOBILE NAV -->
+<nav class="mobile-nav" id="mobile-nav">
+  <button class="mnb active" data-view="chat"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M17 12a2 2 0 01-2 2H6l-4 4V5a2 2 0 012-2h11a2 2 0 012 2z"/></svg><span>Chat</span></button>
+  <button class="mnb" data-view="debate"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><polygon points="10,2 18,7 18,13 10,18 2,13 2,7"/><circle cx="10" cy="10" r="2"/></svg><span>Debate</span></button>
+  <button class="mnb" data-view="voice"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M10 2a3 3 0 00-3 3v5a3 3 0 006 0V5a3 3 0 00-3-3z"/><path d="M16 9v1a6 6 0 01-12 0V9"/></svg><span>Voice</span></button>
+  <button class="mnb" data-view="agents"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><circle cx="7" cy="6" r="3"/><circle cx="14" cy="10" r="2.5"/></svg><span>Agents</span></button>
+  <button class="mnb" id="mnb-settings"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><circle cx="10" cy="10" r="3"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2"/></svg><span>More</span></button>
+</nav>
 
 <!-- SETTINGS MODAL -->
 <div class="modal-bg hidden" id="modal-settings">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-title">SYSTEM SETTINGS</div>
-      <button class="modal-x" id="modal-close">✕</button>
+  <div class="modal-panel">
+    <div class="mp-glow"></div>
+    <div class="mp-header">
+      <div class="mp-title">SYSTEM SETTINGS</div>
+      <button class="mp-close" id="mp-close">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="modal-note">API keys live in <code>.env</code> on your backend only. Never in frontend files.</div>
-      <label class="ml">BACKEND URL</label>
-      <input class="mi" type="text" id="set-backend" placeholder="http://localhost:3000"/>
-      <label class="ml">DEFAULT MODEL</label>
-      <select class="mi" id="set-model">
+    <div class="mp-body">
+      <div class="mp-note">API keys live in <code>.env</code> on backend only. Never in frontend files.</div>
+      <label class="mp-label">BACKEND URL</label>
+      <input class="mp-input" type="text" id="set-backend" placeholder="http://localhost:3000"/>
+      <label class="mp-label">DEFAULT MODEL</label>
+      <select class="mp-input mp-select" id="set-model">
         <option value="openai">OpenAI GPT-4o</option>
         <option value="claude">Claude 3.5 Sonnet</option>
         <option value="gemini">Gemini 1.5 Pro</option>
         <option value="deepseek">DeepSeek Chat</option>
       </select>
-      <label class="ml">YOUR NAME</label>
-      <input class="mi" type="text" id="set-name" placeholder="Mr. Kritesh"/>
-      <label class="ml row-label">STAY LOGGED IN
-        <label class="tog sm"><input type="checkbox" id="set-stay" checked/><span class="tog-track"><span class="tog-thumb"></span></span></label>
+      <label class="mp-label">YOUR NAME</label>
+      <input class="mp-input" type="text" id="set-name" placeholder="Mr. Kritesh"/>
+      <label class="mp-label mp-label-row">STAY LOGGED IN
+        <label class="mp-tog">
+          <input type="checkbox" id="set-stay" checked/>
+          <span class="mpt-track"><span class="mpt-thumb"></span></span>
+        </label>
+      </label>
+      <label class="mp-label mp-label-row">CHANGE PIN
+        <input class="mp-input mp-input-sm" type="password" id="set-pin" placeholder="New 4-digit PIN" maxlength="4"/>
       </label>
     </div>
-    <div class="modal-ftr">
-      <button class="mbtn cancel" id="modal-cancel">CANCEL</button>
-      <button class="mbtn save" id="modal-save">SAVE SETTINGS</button>
+    <div class="mp-footer">
+      <button class="mpf-btn cancel" id="mp-cancel">CANCEL</button>
+      <button class="mpf-btn save"   id="mp-save">SAVE SETTINGS</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST CONTAINER -->
-<div id="toasts" class="toasts"></div>
+<!-- TOASTS -->
+<div id="toasts" class="toasts-wrap"></div>
 
 <script src="script.js"></script>
 </body>
