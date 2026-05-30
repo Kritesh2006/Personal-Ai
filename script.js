@@ -1,1070 +1,1055 @@
 /*
-  ARIA SYSTEM v5 — script.js
-  © Kritesh Dhungel 2025 · All Rights Reserved
-  Unauthorized copying or redistribution prohibited.
+  ARIA v6 — script.js
+  © Kritesh Dhungel 2025. All rights reserved.
+  Unauthorized redistribution prohibited.
 */
 'use strict';
 
-/* ════════════════════════════════════════
+/* ═══════════════════════════════════════════
    CONFIG
-════════════════════════════════════════ */
+═══════════════════════════════════════════ */
 const CFG = {
   PIN:     '0002',
   BACKEND: 'http://localhost:3000',
   USER:    'Mr. Kritesh',
 };
 
-/* ════════════════════════════════════════
+const MODE_META = {
+  ask:      { label:'Ask ARIA',     desc:'General AI reasoning',          color:'#6366f1' },
+  debate:   { label:'Debate',       desc:'Multi-model AI analysis',       color:'#f43f5e' },
+  code:     { label:'Code Helper',  desc:'Code review & generation',      color:'#10b981' },
+  strategy: { label:'Strategy',     desc:'Strategic planning & GTM',      color:'#f59e0b' },
+  research: { label:'Research',     desc:'Deep research & analysis',      color:'#3b82f6' },
+  decision: { label:'Decision',     desc:'Decision engine & trade-offs',  color:'#a855f7' },
+};
+
+/* ═══════════════════════════════════════════
    STATE
-════════════════════════════════════════ */
+═══════════════════════════════════════════ */
 const S = {
-  pin:'', authenticated:false,
-  backendUrl:CFG.BACKEND, backendOnline:false,
-  model:'openai', debateOn:true,
-  chat:[], debates:0,
-  userName:CFG.USER,
-  debating:false, fallback:false,
-  voiceActive:false, recognition:null,
+  pin:'', authed:false,
+  backendUrl: CFG.BACKEND,
+  backendOnline: false,
+  model: 'openai',
+  mode: 'ask',
+  chat: [], debates: 0,
+  userName: CFG.USER,
+  debating: false,
+  fallback: false,
+  voiceActive: false,
+  recognition: null,
+  soundOn: false,
+  sessions: 0,
 };
 
 const LS = {
-  AUTH:'av5_auth', CHAT:'av5_chat', BACK:'av5_back',
-  MOD:'av5_mod',   USER:'av5_usr',  STAY:'av5_stay',
-  DCOUNT:'av5_dc', FIRST:'av5_first',
+  AUTH:'a6_auth', CHAT:'a6_chat', BACK:'a6_back',
+  MOD:'a6_mod',   USER:'a6_usr',  STAY:'a6_stay',
+  DEB:'a6_deb',   FIRST:'a6_first', SND:'a6_snd',
 };
 
 const $  = id  => document.getElementById(id);
 const $$ = sel => document.querySelector(sel);
 
-/* ════════════════════════════════════════
+/* ═══════════════════════════════════════════
+   SOUND SYSTEM (Web Audio API — no files)
+═══════════════════════════════════════════ */
+let audioCtx = null;
+function initAudio() {
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
+}
+function playTone(freq, duration, type='sine', vol=0.06) {
+  if (!S.soundOn || !audioCtx) return;
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
+  } catch {}
+}
+const SFX = {
+  send:      () => playTone(880, .12, 'sine', .05),
+  receive:   () => { playTone(440, .08); setTimeout(() => playTone(660, .1), 90); },
+  mode:      () => playTone(550, .15, 'triangle', .04),
+  judgment:  () => { playTone(330, .12); setTimeout(() => playTone(440, .1), 100); setTimeout(() => playTone(550, .2), 200); },
+  error:     () => playTone(220, .2, 'sawtooth', .04),
+};
+
+/* ═══════════════════════════════════════════
    FALLBACK ENGINE
-════════════════════════════════════════ */
+═══════════════════════════════════════════ */
 const FB = {
   math(t) {
-    const lo = t.toLowerCase().trim();
-    // Percentage of
-    const p1 = lo.match(/(\d+\.?\d*)\s*%\s*of\s*(\d+\.?\d*)/i);
-    if (p1) return `${p1[1]}% of ${p1[2]} = **${((+p1[1]/100)*+p1[2]).toFixed(4).replace(/\.?0+$/,'')}**`;
-    // Conversions
-    const km2mi = lo.match(/^(\d+\.?\d*)\s*km\s+to\s+m/i);
-    if (km2mi) return `${km2mi[1]} km = **${(+km2mi[1]*0.6214).toFixed(3)} miles**`;
-    const mi2km = lo.match(/^(\d+\.?\d*)\s*mi\w*\s+to\s+km/i);
-    if (mi2km) return `${mi2km[1]} miles = **${(+mi2km[1]*1.6093).toFixed(3)} km**`;
-    const c2f = lo.match(/^(-?\d+\.?\d*)\s*°?c\s+to\s+f/i);
+    const lo = t.toLowerCase();
+    const p = lo.match(/(\d+\.?\d*)\s*%\s*of\s*(\d+\.?\d*)/i);
+    if (p) return `${p[1]}% of ${p[2]} = **${((+p[1]/100)*+p[2]).toFixed(4).replace(/\.?0+$/,'')}**`;
+    const c2f = lo.match(/(-?\d+\.?\d*)\s*°?c\s+to\s+f/i);
     if (c2f) return `${c2f[1]}°C = **${((+c2f[1]*9/5)+32).toFixed(1)}°F**`;
-    const f2c = lo.match(/^(-?\d+\.?\d*)\s*°?f\s+to\s+c/i);
+    const f2c = lo.match(/(-?\d+\.?\d*)\s*°?f\s+to\s+c/i);
     if (f2c) return `${f2c[1]}°F = **${(((+f2c[1])-32)*5/9).toFixed(1)}°C**`;
-    const kg2lb = lo.match(/^(\d+\.?\d*)\s*kg\s+to\s+lb/i);
-    if (kg2lb) return `${kg2lb[1]} kg = **${(+kg2lb[1]*2.2046).toFixed(3)} lbs**`;
-    // Pure math
-    const expr = t.replace(/[^0-9+\-*/().\s%]/g,'').trim();
-    if (/^[\d\s+\-*/().%]+$/.test(expr) && expr.length>1) {
+    const km  = lo.match(/(\d+\.?\d*)\s*km\s+to\s+mi/i);
+    if (km) return `${km[1]} km = **${(+km[1]*0.6214).toFixed(3)} miles**`;
+    const mi  = lo.match(/(\d+\.?\d*)\s*mi\w*\s+to\s+km/i);
+    if (mi) return `${mi[1]} miles = **${(+mi[1]*1.6093).toFixed(3)} km**`;
+    const expr = t.replace(/[^0-9+\-*/().\s]/g,'').trim();
+    if (/^[\d\s+\-*/().]+$/.test(expr) && expr.length>1) {
       try {
         const r = Function('"use strict";return('+expr+')')();
-        if (typeof r==='number' && isFinite(r))
-          return `${expr.trim()} = **${r%1===0?r:+r.toFixed(6)}**`;
+        if (typeof r==='number' && isFinite(r)) return `${expr.trim()} = **${r%1===0?r:+r.toFixed(6)}**`;
       } catch {}
     }
     return null;
   },
-
   cmd(t) {
     const lo = t.toLowerCase().trim();
-    const sites = {youtube:'https://youtube.com',google:'https://google.com',gmail:'https://mail.google.com',
-      github:'https://github.com',reddit:'https://reddit.com',spotify:'https://open.spotify.com',
-      netflix:'https://netflix.com',twitter:'https://x.com',x:'https://x.com',
-      instagram:'https://instagram.com',amazon:'https://amazon.com',chatgpt:'https://chat.openai.com'};
-    for (const [name,url] of Object.entries(sites)) {
-      if (new RegExp(`(open|launch|go to)\\s+${name}`,'i').test(lo)) {
-        window.open(url,'_blank');
-        return `Opening **${name[0].toUpperCase()+name.slice(1)}**…`;
+    const sites = {youtube:'https://youtube.com',google:'https://google.com',gmail:'https://mail.google.com',github:'https://github.com',reddit:'https://reddit.com',spotify:'https://open.spotify.com',netflix:'https://netflix.com',twitter:'https://x.com',x:'https://x.com',instagram:'https://instagram.com',amazon:'https://amazon.com',chatgpt:'https://chat.openai.com'};
+    for (const [n,u] of Object.entries(sites)) {
+      if (new RegExp(`(open|launch|go to)\\s+${n}`,'i').test(lo)) {
+        window.open(u,'_blank');
+        return `Opening **${n[0].toUpperCase()+n.slice(1)}**…`;
       }
     }
-    const yt = lo.match(/(?:search youtube|youtube search)\s+(?:for\s+)?(.+)/);
-    if (yt) { window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(yt[1])}`,'_blank'); return `Searching YouTube for **"${yt[1]}"**`; }
-    const g  = lo.match(/(?:search google|google search|search for|search)\s+(.+)/);
-    if (g)  { window.open(`https://www.google.com/search?q=${encodeURIComponent(g[1])}`,'_blank');  return `Searching Google for **"${g[1]}"**`; }
-    if (/what(?:'?s| is)?.*time|time right now|current time/i.test(lo))
-      return `Current time: **${new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}**`;
-    if (/today'?s? date|what day is|current date/i.test(lo))
-      return `Today: **${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}**`;
-    if (/^(clear chat|reset chat|clear)$/i.test(lo)) { clearChat(); return null; }
-    if (/start voice|voice mode/i.test(lo)) { startVoice(); return 'Voice mode activated.'; }
-    if (/stop voice|voice off/i.test(lo))   { stopVoice();  return 'Voice mode off.'; }
+    const yt = lo.match(/search youtube(?:\s+for)?\s+(.+)/);
+    if (yt) { window.open(`https://youtube.com/results?search_query=${encodeURIComponent(yt[1])}`,'_blank'); return `Searching YouTube for **"${yt[1]}"**`; }
+    const g  = lo.match(/search(?:\s+google)?(?:\s+for)?\s+(.+)/);
+    if (g)  { window.open(`https://google.com/search?q=${encodeURIComponent(g[1])}`,'_blank'); return `Searching Google for **"${g[1]}"**`; }
+    if (/what(?:'?s| is).*time|current time/i.test(lo)) return `Current time: **${new Date().toLocaleTimeString()}**`;
+    if (/today'?s? date|what day/i.test(lo)) return `Today: **${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}**`;
+    if (/^(clear chat|reset)$/i.test(lo)) { clearChat(); return null; }
     return null;
   },
-
   general(t) {
     const lo = t.toLowerCase();
     const h  = new Date().getHours();
     const p  = h<12?'morning':h<18?'afternoon':'evening';
-    if (/^(hi|hey|hello|yo|sup|howdy)\b/i.test(lo))
-      return `Good ${p}, ${S.userName}. ARIA is running in local intelligence mode — cloud AI unavailable right now. I can handle math, conversions, commands, and basic analysis.`;
-    if (/how are you|how'?re you/i.test(lo))
-      return `Systems nominal. Running local fallback — full AI intelligence resumes when backend reconnects. What do you need?`;
-    if (/what can you do|help me|capabilities/i.test(lo))
-      return `**Local fallback active.** I can:\n• Math: 1+1, 50% of 200, 100*3.14\n• Conversions: km to miles, °C to °F, kg to lbs\n• Open sites: "open YouTube", "open GitHub"\n• Search: "search Google for X"\n• Time & date: "what time is it"\n• Basic Q&A and strategic frameworks\n\nConnect backend + API keys for full multi-model AI intelligence.`;
-    if (/1\s*\+\s*1|one plus one/i.test(lo)) return '1 + 1 = **2**';
-    return `I'm in local intelligence mode — cloud AI currently unavailable.\n\nTry: "open YouTube", "what time is it", "100 * 3.14", "20% of 500"\n\nOr ask a strategic question and I'll apply local reasoning frameworks.`;
+    if (/^(hi|hey|hello|howdy|yo)\b/i.test(lo))
+      return `Good ${p}, ${S.userName}. ARIA is running in local intelligence mode — cloud AI is currently unavailable. I can still handle math, conversions, web commands, and strategic frameworks. What do you need?`;
+    if (/how are you/i.test(lo)) return 'Systems operational. Running local intelligence mode. What can I reason through for you?';
+    if (/what can you do|help/i.test(lo))
+      return `**Local Intelligence Mode active.** I can:\n• Math & calculations: "50% of 200", "100 * 3.14"\n• Unit conversions: °C↔°F, km↔miles\n• Web commands: "open YouTube", "search Google for X"\n• Time & date\n• Strategic frameworks & reasoning\n\nConnect your backend + API keys for full multi-model AI intelligence.`;
+    return `I'm in local intelligence mode — cloud AI temporarily unavailable.\n\nTry: math ("100 * 1.08"), conversions ("20°C to F"), or "open GitHub".\n\nFor full AI reasoning, connect your backend with valid API keys.`;
   },
-
   handle(t) {
-    const cmd = this.cmd(t);   if (cmd !== null) return cmd;
-    const m   = this.math(t);  if (m   !== null) return `📐 ${m}`;
+    const c = this.cmd(t);   if (c !== null) return c;
+    const m = this.math(t);  if (m !== null) return `📐 ${m}`;
     return this.general(t);
   },
 };
 
-/* ════════════════════════════════════════
-   GLOBAL ATMOSPHERE CANVAS
-════════════════════════════════════════ */
-function initAtmoCanvas() {
-  const c   = $('atmo-particles');
-  if (!c) return;
+/* ═══════════════════════════════════════════
+   BACKGROUND CANVAS
+═══════════════════════════════════════════ */
+function initBgCanvas() {
+  const c = $('bg-canvas'); if (!c) return;
   const ctx = c.getContext('2d');
-  c.width  = window.innerWidth;
-  c.height = window.innerHeight;
-  window.addEventListener('resize', () => { c.width=window.innerWidth; c.height=window.innerHeight; });
-
-  const PTS = Array.from({length:60},() => ({
-    x: Math.random()*c.width, y: Math.random()*c.height,
-    vx:(Math.random()-.5)*.3,  vy:(Math.random()-.5)*.3,
-    r: Math.random()*.8+.2, a: Math.random()*.12+.03,
-  }));
-
+  let W, H, pts = [];
+  const resize = () => {
+    W = c.width  = window.innerWidth;
+    H = c.height = window.innerHeight;
+    pts = Array.from({length:50}, () => ({
+      x:Math.random()*W, y:Math.random()*H,
+      vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25,
+      r:Math.random()*.9+.2,
+    }));
+  };
+  resize(); window.addEventListener('resize', resize);
+  let mx=W/2, my=H/2;
+  window.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
   function draw() {
-    c.width = window.innerWidth; c.height = window.innerHeight;
-    ctx.clearRect(0,0,c.width,c.height);
-    PTS.forEach(p => {
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p => {
       p.x+=p.vx; p.y+=p.vy;
-      if(p.x<0)p.x=c.width; if(p.x>c.width)p.x=0;
-      if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0;
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,31,53,${p.a*0.6})`;ctx.fill();
-      PTS.forEach(q => {
-        const d=Math.hypot(p.x-q.x,p.y-q.y);
-        if(d<90){
-          ctx.beginPath();ctx.strokeStyle=`rgba(255,31,53,${.04*(1-d/90)})`;
-          ctx.lineWidth=.4;ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+      // Subtle mouse attraction
+      const dx=mx-p.x, dy=my-p.y, d=Math.sqrt(dx*dx+dy*dy);
+      if(d<150){ p.x+=dx/d*.08; p.y+=dy/d*.08; }
+      pts.forEach(q => {
+        const dd=Math.hypot(p.x-q.x,p.y-q.y);
+        if(dd<80) {
+          ctx.beginPath();
+          ctx.strokeStyle=`rgba(99,102,241,${.06*(1-dd/80)})`;
+          ctx.lineWidth=.4; ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke();
         }
       });
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(99,102,241,0.25)'; ctx.fill();
     });
     requestAnimationFrame(draw);
   }
   draw();
 }
 
-/* ════════════════════════════════════════
-   BOOT
-════════════════════════════════════════ */
-const BOOT_MSGS = [
-  'INITIALIZING ARIA CORE INTELLIGENCE',
-  'LOADING MULTI-MODEL DEBATE ENGINE',
-  'CALIBRATING AI AGENT NETWORK',
-  'ACTIVATING LOCAL FALLBACK LAYER',
-  'ARIA SYSTEM v5 — OPERATIONAL',
-];
-
-function initBootCanvas() {
-  const c = $('boot-canvas');
-  if (!c) return;
-  c.width=window.innerWidth; c.height=window.innerHeight;
-  const ctx=c.getContext('2d');
-  const pts=Array.from({length:50},()=>({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5,r:Math.random()*1.5+.3,a:Math.random()*.3+.1}));
-  function draw(){
-    if(!$('s-boot').classList.contains('active'))return;
-    ctx.clearRect(0,0,c.width,c.height);
-    pts.forEach(p=>{
-      p.x+=p.vx;p.y+=p.vy;
-      if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;
-      if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0;
-      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,31,53,${p.a*.5})`;ctx.fill();
-    });
-    requestAnimationFrame(draw);
+/* ═══════════════════════════════════════════
+   PIN / AUTH
+═══════════════════════════════════════════ */
+function initPin() {
+  document.querySelectorAll('.npk[data-v]').forEach(b => b.addEventListener('click', () => pinD(b.dataset.v)));
+  $('npk-del').addEventListener('click', () => { S.pin=S.pin.slice(0,-1); updPin(); });
+  $('npk-go').addEventListener('click', pinCheck);
+  document.addEventListener('keydown', e => {
+    if (!$('auth-screen').classList.contains('active')) return;
+    if (/^[0-9]$/.test(e.key)) pinD(e.key);
+    if (e.key==='Backspace') { S.pin=S.pin.slice(0,-1); updPin(); }
+    if (e.key==='Enter') pinCheck();
+  });
+}
+function pinD(d) {
+  if (S.pin.length>=4) return;
+  S.pin+=d; updPin();
+  if (S.pin.length===4) setTimeout(pinCheck,200);
+}
+function updPin() {
+  for (let i=0;i<4;i++) {
+    const el=$(`pv${i}`); if(!el) return;
+    el.className='pv-dot'+(i<S.pin.length?' filled':'');
   }
-  draw();
+}
+function pinCheck() {
+  const correct = localStorage.getItem('a6_pin') || CFG.PIN;
+  if (S.pin===correct) {
+    S.authed=true; S.pin='';
+    if (localStorage.getItem(LS.STAY)!=='false') localStorage.setItem(LS.AUTH,'true');
+    $('auth-screen').classList.remove('active');
+    $('auth-screen').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    initApp();
+  } else {
+    for (let i=0;i<4;i++) $(`pv${i}`).classList.add('err');
+    $('auth-err').classList.remove('hidden');
+    S.pin='';
+    setTimeout(() => { updPin(); $('auth-err').classList.add('hidden'); }, 1500);
+  }
 }
 
-async function runBoot() {
-  initAtmoCanvas();
-  initBootCanvas();
-  const bar  = $('bpr-fill');
-  const pct  = $('bpr-pct');
-  const log  = $('boot-log');
-  const CIRC = 2*Math.PI*52;
+/* ═══════════════════════════════════════════
+   APP INIT
+═══════════════════════════════════════════ */
+function loadSettings() {
+  const b=localStorage.getItem(LS.BACK);  if(b) S.backendUrl=b;
+  const m=localStorage.getItem(LS.MOD);   if(m) S.model=m;
+  const u=localStorage.getItem(LS.USER);  if(u) S.userName=u;
+  S.soundOn = localStorage.getItem(LS.SND)==='true';
+  S.debates = parseInt(localStorage.getItem(LS.DEB)||'0');
+  try { const c=localStorage.getItem(LS.CHAT); S.chat=c?JSON.parse(c):[]; } catch { S.chat=[]; }
+  if (!localStorage.getItem(LS.FIRST)) localStorage.setItem(LS.FIRST,Date.now());
+}
 
-  for (let i=0;i<BOOT_MSGS.length;i++) {
-    await sleep(i===0?300:380+Math.random()*220);
-    const prog=(i+1)/BOOT_MSGS.length;
-    if(bar) bar.style.strokeDashoffset=CIRC*(1-prog);
-    if(pct) pct.textContent=Math.round(prog*100);
-    if(log){
-      const el=document.createElement('div');
-      el.className='bll';el.textContent='▸ '+BOOT_MSGS[i];log.appendChild(el);
-      [...log.children].forEach((e,j)=>e.className='bll '+(j===log.children.length-1?'act':'done'));
-    }
-  }
-  await sleep(700);
+function initApp() {
   loadSettings();
-  const stayIn=localStorage.getItem(LS.STAY)!=='false';
-  if(localStorage.getItem(LS.AUTH)==='true'&&stayIn){
-    S.authenticated=true; trans('s-boot','s-conn'); runConn();
-  } else {
-    trans('s-boot','s-pin'); initPinCanvas();
-  }
-}
-
-/* ════════════════════════════════════════
-   PIN CANVAS
-════════════════════════════════════════ */
-function initPinCanvas(){
-  const c=$('pin-canvas');if(!c)return;
-  c.width=window.innerWidth;c.height=window.innerHeight;
-  const ctx=c.getContext('2d');
-  const pts=Array.from({length:35},()=>({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3}));
-  function draw(){
-    if(!$('s-pin').classList.contains('active'))return;
-    ctx.clearRect(0,0,c.width,c.height);
-    pts.forEach(p=>{
-      p.x+=p.vx;p.y+=p.vy;
-      if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;
-      if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0;
-      pts.forEach(q=>{
-        const d=Math.hypot(p.x-q.x,p.y-q.y);
-        if(d<110){ctx.beginPath();ctx.strokeStyle=`rgba(255,31,53,${.07*(1-d/110)})`;ctx.lineWidth=.5;ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}
-      });
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-}
-
-/* ════════════════════════════════════════
-   PIN PAD
-════════════════════════════════════════ */
-function initPin(){
-  document.querySelectorAll('.pk[data-v]').forEach(b=>b.addEventListener('click',()=>pinDigit(b.dataset.v)));
-  $('pk-del').addEventListener('click',()=>{S.pin=S.pin.slice(0,-1);updDots();});
-  $('pk-ok').addEventListener('click',pinCheck);
-  document.addEventListener('keydown',e=>{
-    if(!$('s-pin').classList.contains('active'))return;
-    if(/^[0-9]$/.test(e.key))pinDigit(e.key);
-    if(e.key==='Backspace'){S.pin=S.pin.slice(0,-1);updDots();}
-    if(e.key==='Enter')pinCheck();
-  });
-}
-
-function pinDigit(d){
-  if(S.pin.length>=4)return;
-  S.pin+=d;updDots();
-  if(S.pin.length===4)setTimeout(pinCheck,200);
-}
-function updDots(){
-  for(let i=0;i<4;i++){
-    const e=$(`ps${i}`);
-    if(e)e.className='pseg'+(i<S.pin.length?' filled':'');
-  }
-}
-function pinCheck(){
-  const correct=localStorage.getItem('av5_pin')||CFG.PIN;
-  if(S.pin===correct){
-    S.authenticated=true;S.pin='';
-    if(localStorage.getItem(LS.STAY)!=='false')localStorage.setItem(LS.AUTH,'true');
-    setTimeout(()=>{trans('s-pin','s-conn');runConn();},300);
-  } else {
-    for(let i=0;i<4;i++){const e=$(`ps${i}`);if(e)e.className='pseg err';}
-    $('pin-err').classList.remove('hidden');S.pin='';
-    setTimeout(()=>{updDots();$('pin-err').classList.add('hidden');},1500);
-  }
-}
-
-/* ════════════════════════════════════════
-   CONNECT
-════════════════════════════════════════ */
-function initConnCanvas(){
-  const c=$('conn-canvas');if(!c)return;
-  c.width=window.innerWidth;c.height=window.innerHeight;
-  const ctx=c.getContext('2d');let r=0;
-  function draw(){
-    if(!$('s-conn').classList.contains('active'))return;
-    ctx.clearRect(0,0,c.width,c.height);
-    const cx=c.width/2,cy=c.height/2;
-    [0,1,2].forEach(i=>{
-      const rad=(r+i*100)%(Math.min(c.width,c.height)*.6);
-      ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);
-      ctx.strokeStyle=`rgba(255,31,53,${.12*(1-rad/(Math.min(c.width,c.height)*.6))})`;
-      ctx.lineWidth=1;ctx.stroke();
-    });
-    r=(r+0.6)%(Math.min(c.width,c.height)*.6);
-    requestAnimationFrame(draw);
-  }
-  draw();
-}
-
-async function runConn(){
-  initConnCanvas();
-  const steps=[$('cst0'),$('cst1'),$('cst2'),$('cst3')];
-  for(let i=0;i<steps.length;i++){
-    await sleep(380+i*400);
-    if(i>0)steps[i-1].className='cst done';
-    steps[i].className='cst active';
-    if(i===1)await checkBackend();
-  }
-  await sleep(350);steps[steps.length-1].className='cst done';
-  await sleep(700);
-  trans('s-conn','s-app');
-  onAppReady();
-}
-
-async function checkBackend(){
-  setStatus('pending','CONNECTING');
-  try{
-    const res=await Promise.race([
-      fetch(`${S.backendUrl}/api/health`),
-      new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),4000)),
-    ]);
-    if(res.ok){
-      S.backendOnline=true;S.fallback=false;setStatus('online','ONLINE');
-      const d=await res.json().catch(()=>({}));
-      if(d.keysConfigured){
-        const miss=Object.entries(d.keysConfigured).filter(([,v])=>!v).map(([k])=>k);
-        if(miss.length)toast(`API keys missing: ${miss.join(', ')}. Add to .env`,'warning',5000);
-        updateAgentBadges(d.keysConfigured);
-      }
-    }else throw new Error(`HTTP ${res.status}`);
-  }catch{
-    S.backendOnline=false;setStatus('offline','OFFLINE');setFallback(true);
-  }
-}
-
-function setStatus(state,label){
-  const dot=$('tns-dot'),lbl=$('tns-label');
-  if(!dot)return;
-  dot.className=`tns-dot ${state}`;lbl.className=`${state}`;lbl.textContent=label;
-}
-
-function setFallback(on){
-  S.fallback=on;
-  const bar=$('fallback-bar');
-  if(bar)on?bar.classList.remove('hidden'):bar.classList.add('hidden');
-}
-
-function updateAgentBadges(keys){
-  const m={openai:'ags-gpt',anthropic:'ags-claude',gemini:'ags-gemini',deepseek:'ags-deepseek'};
-  Object.entries(m).forEach(([k,id])=>{
-    const el=$(id);if(!el)return;
-    if(keys[k]){el.textContent='CONNECTED';el.className='agc-status-badge ok';}
-    else{el.textContent='KEY MISSING';el.className='agc-status-badge fail';}
-  });
-}
-
-function trans(from,to){$(from)?.classList.remove('active');$(to)?.classList.add('active');}
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-const boldify=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-
-/* ════════════════════════════════════════
-   APP READY
-════════════════════════════════════════ */
-function loadSettings(){
-  const b=localStorage.getItem(LS.BACK);if(b)S.backendUrl=b;
-  const m=localStorage.getItem(LS.MOD);if(m)S.model=m;
-  const u=localStorage.getItem(LS.USER);if(u)S.userName=u;
-  S.debates=parseInt(localStorage.getItem(LS.DCOUNT)||'0');
-  try{const c=localStorage.getItem(LS.CHAT);S.chat=c?JSON.parse(c):[];}catch{S.chat=[];}
-  if(!localStorage.getItem(LS.FIRST))localStorage.setItem(LS.FIRST,Date.now());
-}
-
-function onAppReady(){
   initSidebar();
-  initTopNav();
-  initModelDropdown();
-  initChatView();
+  initTopbar();
+  initComposer();
   initDebateView();
-  initVoiceView();
-  initMarketsChips();
-  initSettings();
-  initNeuralCanvas();
-  initWelcomeCanvas();
-  renderChatHistory();
-  updateMemStats();
-  setInterval(()=>{if(!S.debating)checkBackend();},60000);
+  initVoice();
+  initSettingsModal();
+  initModelSelector();
+  applyMode(S.mode);
+  renderHistory();
+  updateGreeting();
+  checkBackend();
+  setInterval(() => { if(!S.debating) checkBackend(); }, 60000);
+  updateSoundIcon();
+  document.addEventListener('keydown', handleShortcuts);
 }
 
-/* ════════════════════════════════════════
-   SIDEBAR & NAV
-════════════════════════════════════════ */
-function initSidebar(){
-  document.querySelectorAll('.sbn[data-view],.mnb[data-view]').forEach(b=>{
-    b.addEventListener('click',()=>{
-      switchView(b.dataset.view);
-      if(window.innerWidth<=768)$('sidebar')?.classList.remove('open');
-    });
-  });
-  $('sb-settings')?.addEventListener('click',openModal);
-  $('sb-lock')?.addEventListener('click',lockSession);
-  $('tn-burger')?.addEventListener('click',()=>$('sidebar')?.classList.toggle('open'));
-  $('mnb-settings')?.addEventListener('click',openModal);
-  $('fb-close')?.addEventListener('click',()=>$('fallback-bar')?.classList.add('hidden'));
-}
-
-function switchView(id){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.querySelectorAll('.sbn[data-view],.mnb[data-view]').forEach(b=>b.classList.remove('active'));
-  $(`view-${id}`)?.classList.add('active');
-  document.querySelectorAll(`[data-view="${id}"]`).forEach(b=>b.classList.add('active'));
-  const bc=$('tn-breadcrumb');if(bc)bc.textContent=id.toUpperCase();
-  if(id==='debate')setTimeout(resizeNeuralCanvas,50);
-}
-
-/* ════════════════════════════════════════
-   TOP NAV
-════════════════════════════════════════ */
-function initTopNav(){
-  $('tn-clear')?.addEventListener('click',clearChat);
-}
-
-/* ════════════════════════════════════════
-   MODEL DROPDOWN
-════════════════════════════════════════ */
-function initModelDropdown(){
-  const chip=$('tn-model-chip'),dd=$('model-dropdown');
-  if(!chip||!dd)return;
-  chip.addEventListener('click',e=>{e.stopPropagation();dd.classList.toggle('open');});
-  document.querySelectorAll('.md-item').forEach(item=>{
-    item.addEventListener('click',()=>{
-      S.model=item.dataset.model;
-      const label=item.dataset.label;
-      $('tmc-label').textContent=label;
-      const colors={openai:'#10d07a',claude:'#f5a623',gemini:'#4d9fff',deepseek:'#b060ff'};
-      $('tmc-orb').style.background=colors[S.model]||'#10d07a';
-      $('tmc-orb').style.boxShadow=`0 0 8px ${colors[S.model]||'#10d07a'}99`;
-      document.querySelectorAll('.md-item').forEach(i=>i.classList.toggle('active',i===item));
-      localStorage.setItem(LS.MOD,S.model);
-      dd.classList.remove('open');
-      toast(`Model: ${label}`,'info');
-    });
-  });
-  document.addEventListener('click',e=>{if(!chip.contains(e.target))dd.classList.remove('open');});
-  // Apply saved model on load
-  const saved=localStorage.getItem(LS.MOD)||'openai';
-  const item=document.querySelector(`.md-item[data-model="${saved}"]`);
-  if(item)item.click();
-}
-
-/* ════════════════════════════════════════
-   WELCOME CANVAS
-════════════════════════════════════════ */
-function initWelcomeCanvas(){
-  const c=$('wlc-canvas');if(!c)return;
-  const ctx=c.getContext('2d');
-  function resize(){c.width=c.offsetWidth;c.height=c.offsetHeight;}
-  resize();window.addEventListener('resize',resize);
-  const pts=Array.from({length:50},()=>({
-    x:Math.random()*(c.width||800),y:Math.random()*(c.height||600),
-    vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,
-    r:Math.random()*1.5+.4,
-  }));
-  function draw(){
-    if(!$('view-chat')?.classList.contains('active')){requestAnimationFrame(draw);return;}
-    if(c.offsetWidth!==c.width||c.offsetHeight!==c.height)resize();
-    const W=c.width,H=c.height;
-    ctx.clearRect(0,0,W,H);
-    // Animated gradient bg
-    const grd=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*.6);
-    grd.addColorStop(0,'rgba(255,31,53,0.055)');
-    grd.addColorStop(.5,'rgba(255,31,53,0.02)');
-    grd.addColorStop(1,'transparent');
-    ctx.fillStyle=grd;ctx.fillRect(0,0,W,H);
-    pts.forEach(p=>{
-      p.x+=p.vx;p.y+=p.vy;
-      if(p.x<0)p.x=W;if(p.x>W)p.x=0;
-      if(p.y<0)p.y=H;if(p.y>H)p.y=0;
-      pts.forEach(q=>{
-        const d=Math.hypot(p.x-q.x,p.y-q.y);
-        if(d<100){ctx.beginPath();ctx.strokeStyle=`rgba(255,31,53,${.1*(1-d/100)})`;ctx.lineWidth=.5;ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}
-      });
-      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(255,31,53,0.25)';ctx.fill();
-    });
-    requestAnimationFrame(draw);
+/* ═══════════════════════════════════════════
+   BACKEND
+═══════════════════════════════════════════ */
+async function checkBackend() {
+  setStatusChip('pending','Connecting…');
+  try {
+    const res = await Promise.race([
+      fetch(`${S.backendUrl}/api/health`),
+      new Promise((_,r) => setTimeout(() => r(new Error('timeout')), 4000)),
+    ]);
+    if (res.ok) {
+      S.backendOnline=true; S.fallback=false;
+      setStatusChip('online','Online');
+      setSbDot(true);
+      const d = await res.json().catch(()=>({}));
+      if (d.keysConfigured) {
+        const miss = Object.entries(d.keysConfigured).filter(([,v])=>!v).map(([k])=>k);
+        if (miss.length) toast(`API keys missing: ${miss.join(', ')}`, 'warn', 5000);
+        updateAgentDots(d.keysConfigured);
+      }
+      $('fallback-notice')?.classList.add('hidden');
+    } else throw new Error(`HTTP ${res.status}`);
+  } catch {
+    S.backendOnline=false; setFallback(true);
+    setStatusChip('offline','Offline');
+    setSbDot(false);
   }
-  draw();
+}
+function setStatusChip(state, label) {
+  const dot=$('tsc-dot'), lbl=$('tsc-label');
+  if (!dot) return;
+  dot.className=`tsc-dot ${state}`; lbl.textContent=label;
+}
+function setSbDot(online) {
+  const d=$('sb-status-dot');
+  if(d) d.className=`sb-status-dot ${online?'online':'offline'}`;
+}
+function setFallback(on) {
+  S.fallback=on;
+  const n=$('fallback-notice');
+  if(n) on?n.classList.remove('hidden'):n.classList.add('hidden');
+}
+function updateAgentDots(keys) {
+  // Future: update agent status in agents view
 }
 
-/* ════════════════════════════════════════
-   CHAT VIEW
-════════════════════════════════════════ */
-function initChatView(){
-  $('ciz-send')?.addEventListener('click',sendChat);
-  $('chat-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
-  $('ciz-mic')?.addEventListener('click',()=>S.voiceActive?stopVoice():startVoice());
-  document.querySelectorAll('.wlc-card[data-prompt]').forEach(c=>{
-    c.addEventListener('click',()=>{
-      const p=c.dataset.prompt;
-      if(p){$('chat-input').value=p;switchView('chat');sendChat();}
+/* ═══════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════ */
+function initSidebar() {
+  document.querySelectorAll('.sbm[data-mode]').forEach(b => {
+    b.addEventListener('click', () => { applyMode(b.dataset.mode); closeSidebar(); });
+  });
+  $('new-chat-btn').addEventListener('click', () => { newChat(); closeSidebar(); });
+  $('sba-settings').addEventListener('click', openSettings);
+  $('sba-lock').addEventListener('click', lockSession);
+  $('sba-sound').addEventListener('click', toggleSound);
+  $('sb-overlay').addEventListener('click', closeSidebar);
+
+  // Suggestion cards
+  document.querySelectorAll('.ess-card[data-prompt]').forEach(c => {
+    c.addEventListener('click', () => {
+      $('main-textarea').value = c.dataset.prompt;
+      sendChat();
     });
   });
 }
 
-async function sendChat(){
-  const raw=$('chat-input')?.value.trim();if(!raw)return;
-  $('chat-input').value='';
-  const welcome=$('chat-welcome');
-  if(welcome&&!welcome.classList.contains('hidden'))welcome.classList.add('hidden');
-  const feed=$('chat-feed');if(feed)feed.classList.remove('hidden');
-  addMsg('user',raw);
+function openSidebar() {
+  $('sidebar').classList.add('open');
+  $('sb-overlay').classList.remove('hidden');
+}
+function closeSidebar() {
+  $('sidebar').classList.remove('open');
+  $('sb-overlay').classList.add('hidden');
+}
 
-  // Always try local commands/math first
-  if(S.backendOnline&&!S.fallback){
-    const tid=showTyping();
-    $('ciz-send').disabled=true;
-    try{
-      const reply=await callChat(raw,S.model);
-      remTyping(tid);$('ciz-send').disabled=false;
-      addMsg('aria',reply,S.model);
-    }catch(err){
-      remTyping(tid);$('ciz-send').disabled=false;
-      handleAPIError(err,raw);
+/* ═══════════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════════ */
+function initTopbar() {
+  $('tb-burger').addEventListener('click', () => {
+    $('sidebar').classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  $('tb-clear').addEventListener('click', clearChat);
+  $('tb-share').addEventListener('click', exportChat);
+  $('fn-close').addEventListener('click', () => $('fallback-notice').classList.add('hidden'));
+}
+
+/* ═══════════════════════════════════════════
+   MODE SYSTEM
+═══════════════════════════════════════════ */
+function applyMode(mode) {
+  S.mode = mode;
+  const meta = MODE_META[mode] || MODE_META.ask;
+
+  // Update sidebar
+  document.querySelectorAll('.sbm').forEach(b => b.classList.toggle('active', b.dataset.mode===mode));
+
+  // Update topbar
+  $('tmp-label').textContent = meta.label;
+  $('tb-mode-desc').textContent = meta.desc;
+  $$('.tmp-dot').style.background = meta.color;
+
+  // Show correct view
+  if (mode === 'debate') {
+    $('view-chat').classList.remove('active');
+    $('view-debate').classList.add('active');
+    $('composer-wrap').classList.add('hidden');
+    setTimeout(resizeNetCanvas, 50);
+  } else {
+    $('view-debate').classList.remove('active');
+    $('view-chat').classList.add('active');
+    $('composer-wrap').classList.remove('hidden');
+  }
+
+  // Update placeholder
+  const ta = $('main-textarea');
+  if (ta) {
+    const placeholders = {
+      ask:'Message ARIA…',
+      code:'Describe your code problem or paste code…',
+      strategy:'Describe your strategic challenge…',
+      research:'What would you like to research deeply?',
+      decision:'What decision are you facing?',
+    };
+    ta.placeholder = placeholders[mode] || 'Message ARIA…';
+  }
+
+  SFX.mode();
+}
+
+/* ═══════════════════════════════════════════
+   MODEL SELECTOR
+═══════════════════════════════════════════ */
+function initModelSelector() {
+  const curr = $('ms-current');
+  const dd   = $('ms-dropdown');
+  curr.addEventListener('click', () => {
+    const open = !dd.classList.contains('hidden');
+    open ? dd.classList.add('hidden') : dd.classList.remove('hidden');
+    curr.classList.toggle('open', !open);
+  });
+  document.querySelectorAll('.msd-item').forEach(item => {
+    item.addEventListener('click', () => {
+      S.model = item.dataset.m;
+      const label = item.dataset.label;
+      $('ms-label').textContent = label;
+      const colors={openai:'#10b981',claude:'#f59e0b',gemini:'#3b82f6',deepseek:'#a855f7'};
+      $('ms-dot').style.background = colors[S.model]||'#10b981';
+      document.querySelectorAll('.msd-item').forEach(i => i.classList.toggle('active', i===item));
+      dd.classList.add('hidden'); curr.classList.remove('open');
+      localStorage.setItem(LS.MOD, S.model);
+      toast(`Model: ${label}`, 'success');
+    });
+  });
+  document.addEventListener('click', e => {
+    if (!$('model-selector').contains(e.target)) {
+      $('ms-dropdown').classList.add('hidden');
+      $('ms-current').classList.remove('open');
+    }
+  });
+  // Apply saved model
+  const saved = localStorage.getItem(LS.MOD) || 'openai';
+  const el = document.querySelector(`.msd-item[data-m="${saved}"]`);
+  if (el) el.click();
+}
+
+/* ═══════════════════════════════════════════
+   CHAT SYSTEM
+═══════════════════════════════════════════ */
+function initComposer() {
+  const ta = $('main-textarea');
+  ta.addEventListener('keydown', e => {
+    if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  });
+  ta.addEventListener('input', () => {
+    ta.style.height='auto';
+    ta.style.height=Math.min(ta.scrollHeight, 160)+'px';
+    $('char-count').textContent=ta.value.length;
+  });
+  $('main-send-btn').addEventListener('click', sendChat);
+  $('voice-btn').addEventListener('click', () => S.voiceActive ? stopVoice() : startVoice());
+}
+
+async function sendChat() {
+  const ta  = $('main-textarea');
+  const raw = ta.value.trim(); if (!raw) return;
+  ta.value=''; ta.style.height='auto'; $('char-count').textContent='0';
+
+  // Show feed, hide empty state
+  $('empty-state').classList.add('hidden');
+  $('chat-feed').classList.remove('hidden');
+
+  addMsg('user', raw);
+  SFX.send();
+
+  if (S.backendOnline && !S.fallback) {
+    const tid = showTyping();
+    $('main-send-btn').disabled=true;
+    try {
+      const reply = await callAPI(raw, S.model);
+      remTyping(tid); $('main-send-btn').disabled=false;
+      addMsg('aria', reply, S.model);
+      SFX.receive();
+    } catch(err) {
+      remTyping(tid); $('main-send-btn').disabled=false;
+      handleApiErr(err, raw);
     }
     return;
   }
-  // Fallback
-  await sleep(280+Math.random()*320);
-  const fb=FB.handle(raw);
-  if(fb)addMsg('aria',fb,null,'fallback');
+  await sleep(300+Math.random()*300);
+  const fb = FB.handle(raw);
+  if (fb) { addMsg('aria', fb, null, 'fallback'); SFX.receive(); }
 }
 
-async function callChat(msg,model){
-  const res=await Promise.race([
+async function callAPI(msg, model) {
+  const res = await Promise.race([
     fetch(`${S.backendUrl}/api/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,model})}),
-    new Promise((_,r)=>setTimeout(()=>r(Object.assign(new Error('timeout'),{type:'timeout'})),20000)),
+    new Promise((_,r) => setTimeout(()=>r(Object.assign(new Error('timeout'),{type:'timeout'})),20000)),
   ]);
-  if(res.status===429)throw Object.assign(new Error('rate limit'),{type:'rate_limit'});
-  if(res.status===401)throw Object.assign(new Error('auth'),{type:'auth'});
-  if(!res.ok)throw Object.assign(new Error(`HTTP ${res.status}`),{type:'http'});
-  const d=await res.json();return d.reply||d.message||'No response received.';
+  if (res.status===429) throw Object.assign(new Error('Rate limit reached'),{type:'rate_limit'});
+  if (res.status===401) throw Object.assign(new Error('Invalid API key'),{type:'auth'});
+  if (!res.ok) throw new Error(`Server error ${res.status}`);
+  const d = await res.json();
+  return d.reply || d.message || 'No response received.';
 }
 
-function handleAPIError(err,orig){
-  const t=err.type||'unknown';
-  let reply;
-  if(t==='rate_limit'||err.message.includes('limit')||err.message.includes('quota')){
-    S.backendOnline=false;setFallback(true);setStatus('offline','LIMIT');
-    reply='Cloud AI limit reached — switching to local intelligence mode.\n\n'+FB.handle(orig);
-  } else if(t==='auth'){
-    reply=`API key issue — check your .env file.\n\n${FB.handle(orig)}`;
-  } else {
-    S.backendOnline=false;setFallback(true);setStatus('offline','OFFLINE');
-    reply=`Connection lost — local mode active.\n\n${FB.handle(orig)}`;
-  }
-  addMsg('aria',reply,null,'fallback');
+function handleApiErr(err, orig) {
+  S.backendOnline=false; setFallback(true);
+  setStatusChip('offline', err.type==='rate_limit' ? 'Limit' : 'Offline');
+  setSbDot(false);
+  const msg = err.type==='rate_limit'
+    ? `Cloud AI limit reached — switching to local mode.\n\n${FB.handle(orig)}`
+    : err.type==='auth'
+    ? `API key issue — check your .env file.\n\n${FB.handle(orig)}`
+    : `Connection lost — local mode active.\n\n${FB.handle(orig)}`;
+  addMsg('aria', msg, null, 'fallback');
+  SFX.error();
 }
 
-/* ════════════════════════════════════════
-   CHAT RENDERING
-════════════════════════════════════════ */
-function addMsg(role,text,model=null,badge=null,save=true){
+/* ═══════════════════════════════════════════
+   RENDERING
+═══════════════════════════════════════════ */
+const BOLD = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+const esc  = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+function addMsg(role, text, model=null, badge=null, save=true) {
   const ts=Date.now();
-  if(save&&role!=='sys'){
-    S.chat.push({role,text,model,ts});
-    if(S.chat.length>200)S.chat.shift();
-    localStorage.setItem(LS.CHAT,JSON.stringify(S.chat));
-    updateMemStats();
+  if (save) {
+    S.chat.push({role,text,model,badge,ts});
+    if (S.chat.length>200) S.chat.shift();
+    localStorage.setItem(LS.CHAT, JSON.stringify(S.chat));
   }
-  renderMsg(role,text,model,badge,ts,true);
+  renderMsg(role, text, model, badge, ts, true);
+  addRecent(text, role);
 }
 
-function renderMsg(role,text,model,badge,ts,anim){
-  const feed=$('chat-feed');if(!feed)return;
-  const isAria=role==='aria';
-  const div=document.createElement('div');
+function renderMsg(role, text, model, badge, ts, anim) {
+  const feed=$('chat-feed'); if(!feed)return;
+  const isAria = role==='aria';
+  const div = document.createElement('div');
   div.className=`msg ${role}`;
-  if(!anim)div.style.animation='none';
+  if (!anim) div.style.animation='none';
+
   const mLabels={openai:'GPT-4o',claude:'Claude 3.5',gemini:'Gemini 1.5',deepseek:'DeepSeek'};
-  const badgeHtml=isAria&&model
-    ?`<div class="msg-badge">${mLabels[model]||model}</div>`
-    :badge==='fallback'
-    ?`<div class="msg-badge fallback">LOCAL INTELLIGENCE</div>`:'';
-  const t=ts?new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-  div.innerHTML=`
-    <div class="msg-av">${isAria?'AI':'YOU'}</div>
+  const badgeHtml = isAria && model
+    ? `<span class="msg-badge">${mLabels[model]||model}</span>`
+    : badge==='fallback'
+    ? `<span class="msg-badge local">Local Intel</span>` : '';
+  const t = ts ? new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+
+  div.innerHTML = `
+    <div class="msg-avatar">${isAria?'AI':'YOU'}</div>
     <div class="msg-body">
-      <div class="msg-role">${isAria?'ARIA':'YOU'}</div>
-      <div class="msg-text">${boldify(text)}</div>
-      ${badgeHtml}
-      <div class="msg-ts">${t}</div>
+      <div class="msg-header">
+        <span class="msg-author">${isAria?'ARIA':S.userName}</span>
+        ${badgeHtml}
+        <span class="msg-ts">${t}</span>
+      </div>
+      <div class="msg-content">${BOLD(text)}</div>
+      ${isAria ? `<div class="msg-actions">
+        <button class="ma-btn" onclick="copyMsg(this)" title="Copy">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" width="10" height="10"><rect x="4" y="4" width="8" height="8" rx="1"/><path d="M2 10V2h8"/></svg>Copy
+        </button>
+      </div>` : ''}
     </div>`;
   feed.appendChild(div);
-  scrollChat();
+  feed.scrollTop = feed.scrollHeight;
 }
 
-function renderChatHistory(){
-  const feed=$('chat-feed');if(!feed)return;
-  if(S.chat.length===0)return;
-  $('chat-welcome')?.classList.add('hidden');
-  feed.classList.remove('hidden');
-  S.chat.forEach(m=>renderMsg(m.role,m.text,m.model,null,m.ts,false));
-  scrollChat();
+function renderHistory() {
+  if (!S.chat.length) return;
+  $('empty-state').classList.add('hidden');
+  $('chat-feed').classList.remove('hidden');
+  S.chat.forEach(m => renderMsg(m.role,m.text,m.model,m.badge,m.ts,false));
+  $('chat-feed').scrollTop = $('chat-feed').scrollHeight;
 }
 
-function showTyping(){
-  const feed=$('chat-feed');if(!feed)return null;
+function showTyping() {
+  const feed=$('chat-feed'); if(!feed)return null;
   const id='ty-'+Date.now();
-  const d=document.createElement('div');
-  d.id=id;d.className='msg aria';
-  d.innerHTML=`<div class="msg-av">AI</div><div class="msg-body"><div class="msg-role">ARIA</div><div class="msg-text"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>`;
-  feed.appendChild(d);scrollChat();return id;
+  const d=document.createElement('div'); d.id=id; d.className='msg aria';
+  d.innerHTML=`<div class="msg-avatar">AI</div><div class="msg-body"><div class="msg-header"><span class="msg-author">ARIA</span></div><div class="msg-content"><div class="typing-row"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div></div>`;
+  feed.appendChild(d); feed.scrollTop=feed.scrollHeight; return id;
 }
-function remTyping(id){if(id)$(id)?.remove();}
-function scrollChat(){requestAnimationFrame(()=>{const f=$('chat-feed');if(f)f.scrollTop=f.scrollHeight;});}
+function remTyping(id) { if(id) $(id)?.remove(); }
 
-function clearChat(){
-  S.chat=[];localStorage.removeItem(LS.CHAT);
-  const feed=$('chat-feed');if(feed){feed.innerHTML='';feed.classList.add('hidden');}
-  $('chat-welcome')?.classList.remove('hidden');
-  updateMemStats();toast('Chat cleared','info');
+function clearChat() {
+  S.chat=[]; localStorage.removeItem(LS.CHAT);
+  const f=$('chat-feed'); if(f){f.innerHTML='';f.classList.add('hidden');}
+  $('empty-state').classList.remove('hidden');
+  toast('Chat cleared','success');
 }
 
-/* ════════════════════════════════════════
+function newChat() {
+  clearChat();
+  applyMode('ask');
+}
+
+function copyMsg(btn) {
+  const text = btn.closest('.msg-body').querySelector('.msg-content').innerText;
+  navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard','success'));
+}
+
+function exportChat() {
+  if (!S.chat.length) { toast('No chat to export','warn'); return; }
+  const txt = S.chat.map(m=>`${m.role.toUpperCase()} [${new Date(m.ts).toLocaleString()}]\n${m.text}`).join('\n\n---\n\n');
+  const a=document.createElement('a'); a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(txt);
+  a.download=`aria-chat-${Date.now()}.txt`; a.click();
+  toast('Chat exported','success');
+}
+
+function addRecent(text, role) {
+  if (role!=='user') return;
+  const cont=$('sb-recents'); if(!cont)return;
+  const empty=cont.querySelector('.sb-recents-empty'); if(empty)empty.remove();
+  const el=document.createElement('div'); el.className='recent-item';
+  el.textContent=text.slice(0,40)+(text.length>40?'…':'');
+  el.title=text; cont.insertBefore(el,cont.firstChild);
+  if(cont.children.length>8)cont.removeChild(cont.lastChild);
+}
+
+/* ═══════════════════════════════════════════
    NEURAL NETWORK CANVAS
-════════════════════════════════════════ */
-const NET={canvas:null,ctx:null,W:0,H:0,raf:null,particles:[],edgePs:[]};
-
-const NODE_IDS=['user','gpt','claude','gemini','deepseek','judge'];
-const EDGES=[
+═══════════════════════════════════════════ */
+const NET = { c:null, ctx:null, W:0, H:0, particles:[], raf:null };
+const NEDGES = [
   ['user','gpt'],['user','claude'],['user','gemini'],['user','deepseek'],
   ['gpt','judge'],['claude','judge'],['gemini','judge'],['deepseek','judge'],
-  ['gpt','claude'],['gemini','deepseek'],
+  ['gpt','gemini'],['claude','deepseek'],
 ];
-const NODE_COLORS={
-  user:'rgba(255,255,255,0.8)',
-  gpt:'rgba(16,208,122,0.9)',claude:'rgba(245,166,35,0.9)',
-  gemini:'rgba(77,159,255,0.9)',deepseek:'rgba(176,96,255,0.9)',
-  judge:'rgba(255,31,53,0.9)',
+const NCOLORS = {
+  user:'rgba(255,255,255,.7)', gpt:'rgba(16,185,129,.9)',
+  claude:'rgba(245,158,11,.9)', gemini:'rgba(59,130,246,.9)',
+  deepseek:'rgba(168,85,247,.9)', judge:'rgba(244,63,94,.9)',
 };
 
-function getNodePos(){
-  const W=NET.W,H=NET.H;
+function getPos() {
+  const W=NET.W, H=NET.H;
   return {
-    user:    {x:W*.5, y:H*.12},
-    claude:  {x:W*.1, y:H*.45},
-    gemini:  {x:W*.9, y:H*.45},
-    deepseek:{x:W*.2, y:H*.78},
-    gpt:     {x:W*.8, y:H*.78},
-    judge:   {x:W*.5, y:H*.88},
+    user:     {x:W*.5, y:H*.1},
+    claude:   {x:W*.12,y:H*.42},
+    gemini:   {x:W*.88,y:H*.42},
+    deepseek: {x:W*.2, y:H*.78},
+    gpt:      {x:W*.8, y:H*.78},
+    judge:    {x:W*.5, y:H*.9},
   };
 }
 
-function initNeuralCanvas(){
-  NET.canvas=$('neural-canvas');if(!NET.canvas)return;
-  NET.ctx=NET.canvas.getContext('2d');
-  resizeNeuralCanvas();
-  window.addEventListener('resize',resizeNeuralCanvas);
-  for(let i=0;i<20;i++)NET.particles.push(newNetPt());
-  renderNet();
+function initNetCanvas() {
+  NET.c=$('net-canvas'); if(!NET.c)return;
+  NET.ctx=NET.c.getContext('2d');
+  resizeNetCanvas();
+  window.addEventListener('resize',resizeNetCanvas);
+  for(let i=0;i<15;i++) NET.particles.push(newNP());
+  renderNetLoop();
 }
 
-function newNetPt(){
-  return{x:Math.random()*(NET.W||500),y:Math.random()*(NET.H||400),vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,r:Math.random()*.8+.2};
+function newNP() {
+  return{x:Math.random()*(NET.W||500),y:Math.random()*(NET.H||400),vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.2,r:.5+Math.random()*.5};
 }
 
-function resizeNeuralCanvas(){
-  const stage=$('neural-stage');if(!stage||!NET.canvas)return;
-  NET.W=NET.canvas.width=stage.offsetWidth;
-  NET.H=NET.canvas.height=stage.offsetHeight;
-  positionNodes();
+function resizeNetCanvas() {
+  const pane=$('debate-network-pane'); if(!pane||!NET.c)return;
+  NET.W=NET.c.width=pane.offsetWidth;
+  NET.H=NET.c.height=pane.offsetHeight;
+  posNodes();
 }
 
-function positionNodes(){
+function posNodes() {
   if(!NET.W||!NET.H)return;
-  const pos=getNodePos();
-  const map={user:'nd-user',gpt:'nd-gpt',claude:'nd-claude',gemini:'nd-gemini',deepseek:'nd-deepseek',judge:'nd-judge'};
-  Object.entries(map).forEach(([k,id])=>{
-    const el=$(id);if(el&&pos[k]){el.style.left=pos[k].x+'px';el.style.top=pos[k].y+'px';}
+  const pos=getPos();
+  const m={user:'nnn-user',gpt:'nnn-gpt',claude:'nnn-claude',gemini:'nnn-gemini',deepseek:'nnn-deepseek',judge:'nnn-judge'};
+  Object.entries(m).forEach(([k,id])=>{
+    const el=$(id); if(el&&pos[k]){el.style.left=pos[k].x+'px';el.style.top=pos[k].y+'px';}
   });
 }
 
-function spawnEdge(from,to,color,speed){
-  const pos=getNodePos();
-  const a=pos[from],b=pos[to];if(!a||!b)return;
-  NET.edgePs.push({ax:a.x,ay:a.y,bx:b.x,by:b.y,t:0,speed:speed||(0.006+Math.random()*0.006),color:color||'rgba(255,255,255,.7)',trail:[]});
+// Edge particles travelling along lines
+const EP=[];
+function spawnEP(from,to,color,s=.007) {
+  const pos=getPos(),a=pos[from],b=pos[to]; if(!a||!b)return;
+  EP.push({ax:a.x,ay:a.y,bx:b.x,by:b.y,t:0,speed:s+(Math.random()*.005),color,trail:[]});
 }
 
-function renderNet(){
-  NET.raf=requestAnimationFrame(renderNet);
-  const ctx=NET.ctx;if(!ctx||!NET.W)return;
+function renderNetLoop() {
+  NET.raf=requestAnimationFrame(renderNetLoop);
+  const ctx=NET.ctx; if(!ctx||!NET.W)return;
   ctx.clearRect(0,0,NET.W,NET.H);
 
-  const pos=getNodePos();
-  const isActive=S.debating;
+  const pos=getPos();
 
-  // Ambient glow at center
-  const ag=ctx.createRadialGradient(NET.W/2,NET.H/2,0,NET.W/2,NET.H/2,NET.W*.4);
-  ag.addColorStop(0,isActive?'rgba(255,31,53,0.05)':'rgba(255,31,53,0.02)');
-  ag.addColorStop(1,'transparent');
-  ctx.fillStyle=ag;ctx.fillRect(0,0,NET.W,NET.H);
+  // Ambient glow
+  const g=ctx.createRadialGradient(NET.W/2,NET.H/2,0,NET.W/2,NET.H/2,NET.W*.5);
+  g.addColorStop(0,'rgba(99,102,241,0.04)'); g.addColorStop(1,'transparent');
+  ctx.fillStyle=g; ctx.fillRect(0,0,NET.W,NET.H);
 
-  // Draw edges
-  EDGES.forEach(([a,b])=>{
-    const pa=pos[a],pb=pos[b];if(!pa||!pb)return;
-    const g=ctx.createLinearGradient(pa.x,pa.y,pb.x,pb.y);
-    const al=isActive?.18:.07;
-    g.addColorStop(0,`rgba(255,255,255,${al})`);
-    g.addColorStop(.5,`rgba(255,31,53,${al*1.6})`);
-    g.addColorStop(1,`rgba(255,255,255,${al})`);
-    ctx.beginPath();ctx.strokeStyle=g;ctx.lineWidth=isActive?1.2:.6;
-    ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);ctx.stroke();
+  // Edges
+  NEDGES.forEach(([a,b])=>{
+    const pa=pos[a],pb=pos[b]; if(!pa||!pb)return;
+    const active=S.debating;
+    const gr=ctx.createLinearGradient(pa.x,pa.y,pb.x,pb.y);
+    const al=active?.16:.06;
+    gr.addColorStop(0,`rgba(99,102,241,${al})`);
+    gr.addColorStop(.5,`rgba(139,92,246,${al*1.5})`);
+    gr.addColorStop(1,`rgba(99,102,241,${al})`);
+    ctx.beginPath(); ctx.strokeStyle=gr; ctx.lineWidth=active?1:.5;
+    ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
   });
 
   // Edge particles
-  for(let i=NET.edgePs.length-1;i>=0;i--){
-    const ep=NET.edgePs[i];
-    ep.t+=ep.speed;
-    if(ep.t>=1){NET.edgePs.splice(i,1);continue;}
-    const x=ep.ax+(ep.bx-ep.ax)*ep.t;
-    const y=ep.ay+(ep.by-ep.ay)*ep.t;
-    ep.trail.push({x,y,a:0.8});
-    if(ep.trail.length>12)ep.trail.shift();
-    // Draw trail
-    ep.trail.forEach((pt,ti)=>{
-      const alpha=pt.a*(ti/ep.trail.length);
-      const rr=2.5*(ti/ep.trail.length);
-      ctx.beginPath();ctx.arc(pt.x,pt.y,rr,0,Math.PI*2);
-      ctx.fillStyle=ep.color.replace(/[\d.]+\)$/,`${alpha})`);ctx.fill();
+  for(let i=EP.length-1;i>=0;i--){
+    const p=EP[i]; p.t+=p.speed;
+    if(p.t>=1){EP.splice(i,1);continue;}
+    const x=p.ax+(p.bx-p.ax)*p.t;
+    const y=p.ay+(p.by-p.ay)*p.t;
+    p.trail.push({x,y});
+    if(p.trail.length>10)p.trail.shift();
+    // Trail
+    p.trail.forEach((pt,ti)=>{
+      const a=(ti/p.trail.length)*.7;
+      const r=1.5*(ti/p.trail.length)+.5;
+      ctx.beginPath(); ctx.arc(pt.x,pt.y,r,0,Math.PI*2);
+      ctx.fillStyle=p.color.replace(/[\d.]+\)$/,`${a})`); ctx.fill();
     });
-    // Glow dot
-    const gr=ctx.createRadialGradient(x,y,0,x,y,16);
-    gr.addColorStop(0,ep.color.replace(/[\d.]+\)$/,'0.5)'));
+    // Glow
+    const gr=ctx.createRadialGradient(x,y,0,x,y,12);
+    gr.addColorStop(0,p.color.replace(/[\d.]+\)$/,'0.4)'));
     gr.addColorStop(1,'transparent');
-    ctx.beginPath();ctx.arc(x,y,16,0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();
-    ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fillStyle=ep.color;ctx.fill();
+    ctx.beginPath(); ctx.arc(x,y,12,0,Math.PI*2); ctx.fillStyle=gr; ctx.fill();
+    ctx.beginPath(); ctx.arc(x,y,2.5,0,Math.PI*2); ctx.fillStyle=p.color; ctx.fill();
   }
 
-  // Spawn particles during debate
-  if(S.debating&&Math.random()<.06){
-    const e=EDGES[Math.floor(Math.random()*EDGES.length)];
-    const colors=Object.values(NODE_COLORS);
-    spawnEdge(e[0],e[1],colors[Math.floor(Math.random()*colors.length)]);
+  // Spawn particles when debating
+  if(S.debating && Math.random()<.04){
+    const e=NEDGES[Math.floor(Math.random()*NEDGES.length)];
+    const cols=Object.values(NCOLORS);
+    spawnEP(e[0],e[1],cols[Math.floor(Math.random()*cols.length)]);
   }
 
-  // Background particles
+  // Background dots
   NET.particles.forEach(p=>{
-    p.x+=p.vx;p.y+=p.vy;
-    if(p.x<0)p.x=NET.W;if(p.x>NET.W)p.x=0;
-    if(p.y<0)p.y=NET.H;if(p.y>NET.H)p.y=0;
-    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,0.05)';ctx.fill();
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0)p.x=NET.W; if(p.x>NET.W)p.x=0;
+    if(p.y<0)p.y=NET.H; if(p.y>NET.H)p.y=0;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fill();
   });
 }
 
-function setNode(id,state){
-  const el=$('nd-'+id);const sd=$('nds-'+id);
-  if(el){el.classList.remove('thinking','done');if(state!=='idle')el.classList.add(state);}
-  if(sd){sd.className='nnd-status '+(state!=='idle'?state:'');}
+function setNN(id,state) {
+  const el=$('nnn-'+id);
+  if(el){ el.classList.remove('thinking','done'); if(state!=='idle')el.classList.add(state); el.className+=' '+id+'-nnn'; }
+}
+function setNNState(id,state) {
+  const el=$('nnn-'+id);
+  if(!el)return;
+  el.classList.remove('thinking','done');
+  if(state!=='idle')el.classList.add(state);
 }
 
-function updateNsbText(text,state='active'){
-  const el=$('nsb-text'),dot=$$('.nsb-dot');
-  if(el)el.textContent=text;
-  if(dot){dot.className='nsb-dot '+(state==='idle'?'':state);}
+function setTicker(text,state='idle') {
+  const dot=$$('.nt-dot'), txt=$('nt-text');
+  if(dot)dot.className=`nt-dot ${state}`;
+  if(txt)txt.textContent=text;
 }
 
-/* ════════════════════════════════════════
+/* ═══════════════════════════════════════════
    DEBATE VIEW
-════════════════════════════════════════ */
-function initDebateView(){
-  const tog=$('debate-toggle'),lbl=$('dib-mode');
+═══════════════════════════════════════════ */
+function initDebateView() {
+  const tog=$('debate-tog'), st=$('dap-tog-status');
   tog?.addEventListener('change',()=>{
     S.debateOn=tog.checked;
-    if(lbl)lbl.textContent=S.debateOn?'DEBATE ACTIVE':'DEBATE OFF';
-    toast(S.debateOn?'Debate mode activated':'Debate mode disabled','info');
+    st.textContent=tog.checked?'ON':'OFF';
+    st.className=`dap-tog-status ${tog.checked?'on':''}`;
+    toast(tog.checked?'Debate mode on':'Debate mode off','success');
   });
-  $('debate-send')?.addEventListener('click',sendDebate);
-  $('debate-input')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendDebate();}});
+
+  const ta=$('debate-textarea');
+  ta?.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendDebate();}
+  });
+  ta?.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,120)+'px';});
+  $('debate-send-btn')?.addEventListener('click',sendDebate);
 }
 
-async function sendDebate(){
-  if(S.debating)return;
-  const q=$('debate-input')?.value.trim();if(!q)return;
-  $('debate-input').value='';
-  if(!S.debateOn){toast('Enable debate mode first','error');return;}
+async function sendDebate() {
+  if(S.debating) return;
+  const ta=$('debate-textarea');
+  const q=ta?.value.trim(); if(!q)return;
+  ta.value=''; ta.style.height='auto';
 
   S.debating=true;
-  $('debate-send').disabled=true;
+  $('debate-send-btn').disabled=true;
 
-  // Hide idle overlay
-  $('neural-idle')?.classList.add('hidden');
+  // UI setup
+  const cards=$('agent-cards');
+  cards.innerHTML='';
+  const ql=document.createElement('div'); ql.className='debate-q-label';
+  ql.textContent=q.length>60?q.slice(0,60)+'…':q;
+  cards.appendChild(ql);
 
-  // Clear panel
-  const dp=$('dp-scroll');
-  if(dp){dp.innerHTML='';const ql=document.createElement('div');ql.className='dp-qlabel';ql.textContent=q.length>55?q.slice(0,55)+'…':q;dp.appendChild(ql);}
-  const badge=$('dph-badge');if(badge){badge.textContent='PROCESSING';badge.className='dph-badge active';}
+  $('dnp-status').textContent='ACTIVE'; $('dnp-status').className='dnp-status active';
+  $('agent-empty')?.remove();
+  ['gpt','claude','gemini','deepseek','judge'].forEach(n=>setNNState(n,'idle'));
+  setNNState('user','thinking');
+  setTicker('Distributing query to agents…','active');
+  spawnEP('user','gpt',NCOLORS.gpt); spawnEP('user','claude',NCOLORS.claude);
+  spawnEP('user','gemini',NCOLORS.gemini); spawnEP('user','deepseek',NCOLORS.deepseek);
+  await sleep(400); setNNState('user','done');
+  ['gpt','claude','gemini','deepseek'].forEach(n=>setNNState(n,'thinking'));
+  setTicker('All agents analyzing simultaneously…','active');
 
-  // Activate user node
-  setNode('user','thinking');updateNsbText('USER request received — distributing to agents…');
-  spawnEdge('user','gpt',NODE_COLORS.gpt);spawnEdge('user','claude',NODE_COLORS.claude);
-  spawnEdge('user','gemini',NODE_COLORS.gemini);spawnEdge('user','deepseek',NODE_COLORS.deepseek);
-  await sleep(500);setNode('user','done');
-
-  // Activate all agents
-  ['gpt','claude','gemini','deepseek'].forEach(n=>setNode(n,'thinking'));
-  updateNsbText('GPT · Claude · Gemini · DeepSeek analyzing simultaneously…');
-
-  if(!S.backendOnline||S.fallback){
-    await runFallbackDebate(q,dp);
+  if(!S.backendOnline||S.fallback) {
+    await runLocalDebate(q,cards);
   } else {
     let result=null;
-    try{
+    try {
       const res=await Promise.race([
         fetch(`${S.backendUrl}/api/debate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})}),
         new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),28000)),
       ]);
-      if(res.status===429||res.status===401){setFallback(true);throw Object.assign(new Error('limit'),{type:'rate_limit'});}
+      if(res.status===429){setFallback(true);throw Object.assign(new Error('limit'),{type:'rate_limit'});}
       if(!res.ok)throw new Error(`HTTP ${res.status}`);
       result=await res.json();
-    }catch(err){
-      ['gpt','claude','gemini','deepseek','judge'].forEach(n=>setNode(n,'idle'));
-      await runFallbackDebate(q,dp);
-      S.debating=false;$('debate-send').disabled=false;
+    } catch(err) {
+      ['gpt','claude','gemini','deepseek','judge'].forEach(n=>setNNState(n,'idle'));
+      await runLocalDebate(q,cards);
+      S.debating=false; $('debate-send-btn').disabled=false;
       return;
     }
 
-    // Stream agent responses
-    const agents=[
-      {key:'claude',nodeId:'claude',color:NODE_COLORS.claude,colorHex:'#f5a623',label:'CLAUDE',tag:'Anthropic'},
-      {key:'gemini',nodeId:'gemini',color:NODE_COLORS.gemini,colorHex:'#4d9fff',label:'GEMINI',tag:'Google'},
-      {key:'deepseek',nodeId:'deepseek',color:NODE_COLORS.deepseek,colorHex:'#b060ff',label:'DEEPSEEK',tag:'DeepSeek AI'},
-      {key:'openai',nodeId:'gpt',color:NODE_COLORS.gpt,colorHex:'#10d07a',label:'GPT-4o',tag:'OpenAI'},
+    // Stream agents
+    const agentCfg=[
+      {key:'claude',   id:'claude',   color:'#f59e0b', label:'CLAUDE',   tag:'Anthropic'},
+      {key:'gemini',   id:'gemini',   color:'#3b82f6', label:'GEMINI',   tag:'Google'},
+      {key:'deepseek', id:'deepseek', color:'#a855f7', label:'DEEPSEEK', tag:'DeepSeek AI'},
+      {key:'openai',   id:'gpt',      color:'#10b981', label:'GPT-4o',   tag:'OpenAI'},
     ];
-
-    for(const ag of agents){
-      const text=result[ag.key==='.openai'?'openai':ag.key];
-      if(!text)continue;
-      setNode(ag.nodeId,'done');
-      updateNsbText(`${ag.label} response received — forwarding to Judge…`);
-      spawnEdge(ag.nodeId,'judge',ag.color);
-      const card=makeAgentCard(ag.label,ag.tag,ag.colorHex);
-      dp.appendChild(card.el);
-      await streamCard(card.body,text);
-      await sleep(150);
+    for(const ag of agentCfg) {
+      const text=result[ag.key]; if(!text)continue;
+      setNNState(ag.id,'done');
+      setTicker(`${ag.label} responded — forwarding to Judge…`,'active');
+      spawnEP(ag.id,'judge',NCOLORS[ag.id]);
+      const card=makeAgCard(ag.label,ag.tag,ag.color);
+      cards.appendChild(card.el); await streamEl(card.body,text); await sleep(100);
     }
-
     // Judge
-    updateNsbText('FINAL JUDGE synthesizing all perspectives…');
-    setNode('judge','thinking');
-    ['claude','gemini','deepseek','gpt'].forEach((n,i)=>setTimeout(()=>spawnEdge(n,'judge','rgba(255,31,53,0.95)'),i*150));
-    await sleep(1000);
+    setNNState('judge','thinking');
+    setTicker('Final Judge synthesizing verdict…','active');
+    ['claude','gemini','deepseek','gpt'].forEach((n,i)=>setTimeout(()=>spawnEP(n,'judge',NCOLORS.judge,.009),i*120));
+    await sleep(800);
     if(result.openai_judgment){
-      setNode('judge','done');
-      updateNsbText('VERDICT delivered.',  'done');
-      const jc=makeJudgeCard();dp.appendChild(jc.el);
-      await streamCard(jc.body,result.openai_judgment);
+      setNNState('judge','done');
+      setTicker('Verdict delivered.','done');
+      $('dnp-status').textContent='COMPLETE'; $('dnp-status').className='dnp-status complete';
+      const jc=makeJudgeCard();
+      cards.appendChild(jc.el); await streamEl(jc.body,result.openai_judgment);
+      SFX.judgment();
     }
   }
 
-  S.debates++;localStorage.setItem(LS.DCOUNT,S.debates);updateMemStats();
-  if(badge){badge.textContent='COMPLETE';badge.className='dph-badge done';}
-  dp?.scrollTo({top:dp.scrollHeight,behavior:'smooth'});
-  S.debating=false;$('debate-send').disabled=false;
+  S.debates++; localStorage.setItem(LS.DEB,S.debates);
+  S.debating=false; $('debate-send-btn').disabled=false;
+  cards.scrollTop=cards.scrollHeight;
 }
 
-async function runFallbackDebate(q,dp){
-  const fallbacks=[
-    {label:'STRATEGIC ANALYSIS',tag:'Local Intel',colorHex:'#f5a623',
-      text:`Strategic perspective on "${q}":\n\nFocus on asymmetric leverage — which single action creates the most compounding optionality? Map the decision space: reversible early moves vs. irreversible commitments. The highest-leverage path usually involves testing a core assumption with minimum viable resources before full commitment. Identify which variable, if proven wrong, collapses the entire thesis.`},
-    {label:'CRITICAL CHALLENGE',tag:'Local Intel',colorHex:'#4d9fff',
-      text:`Adversarial analysis of "${q}":\n\nWhat is the hidden assumption that breaks this entire premise if wrong? Most strategic failures stem not from poor execution but from an unquestioned foundational belief. The Critic's job: find the one question everyone is afraid to ask. Challenge the market size assumption, the timing assumption, and the capability assumption — usually all three are optimistic.`},
-    {label:'REALIST ASSESSMENT',tag:'Local Intel',colorHex:'#b060ff',
-      text:`Ground-reality assessment of "${q}":\n\nTheory is cheap; execution is where ideas die. What resources, timeline, and capabilities does this actually require? Where do 80% of attempts at this fail, and why? Account for the "execution discount" — plans take 2-3x longer and cost 2-3x more than projected. What does success actually look like on Day 1, Day 100, and Year 3?`},
+async function runLocalDebate(q,cards) {
+  const agents=[
+    {label:'STRATEGIC ANALYSIS',tag:'Local Intel',color:'#f59e0b',
+      text:`Strategic view on "${q}":\n\nThe key leverage point is identifying which single variable produces the highest compounding return. Map all paths — which are reversible vs. irreversible? The bold move: commit resources only after a minimum viable test proves the core assumption. Asymmetric bets — low downside, high upside — should always be explored first.`},
+    {label:'ADVERSARIAL CRITIQUE',tag:'Local Intel',color:'#3b82f6',
+      text:`Critical challenge on "${q}":\n\nThe hidden assumption most likely to break this thesis: that the market timing is correct, or that the core capability assumption holds. Most strategic failures come not from poor execution but from an unquestioned foundational belief that turned out to be wrong. What's the one question you're most afraid to pressure-test?`},
+    {label:'REALIST ASSESSMENT',tag:'Local Intel',color:'#a855f7',
+      text:`Ground reality on "${q}":\n\nExecution is where ideas die. What does this actually require — timeline, capital, and capability? The execution discount rule: plans take 2–3× longer and cost 2–3× more than projected. Where do 80% of attempts at this specific challenge fail? That's where to focus first.`},
   ];
-
-  for(const ag of fallbacks){
-    const n={claude:'claude',gemini:'gemini',deepseek:'deepseek'}[ag.label.split(' ')[0].toLowerCase()]||'gpt';
-    setNode('gpt','done');setNode('claude','done');setNode('gemini','done');setNode('deepseek','done');
-    const card=makeAgentCard(ag.label,ag.tag,ag.colorHex);
-    dp.appendChild(card.el);await streamCard(card.body,ag.text);await sleep(200);
+  for(const ag of agents){
+    setNNState('gpt','done'); setNNState('claude','done');
+    setNNState('gemini','done'); setNNState('deepseek','done');
+    const card=makeAgCard(ag.label,ag.tag,ag.color);
+    cards.appendChild(card.el); await streamEl(card.body,ag.text); await sleep(200);
   }
-  setNode('judge','thinking');
-  updateNsbText('FINAL JUDGE synthesizing…');
+  setNNState('judge','thinking');
+  setTicker('Final Judge synthesizing…','active');
   await sleep(700);
-  setNode('judge','done');updateNsbText('VERDICT delivered.','done');
+  setNNState('judge','done');
+  setTicker('Verdict delivered.','done');
+  $('dnp-status').textContent='COMPLETE'; $('dnp-status').className='dnp-status complete';
+
   const math=FB.math(q);
   const verdict=math
-    ?`Calculation: ${math}\n\nFor full multi-model debate, connect backend with valid API keys.`
-    :`Final synthesis on "${q}":\n\nThe Strategic view highlights leverage and optionality as the core variables. The Critical challenge reveals that the key unexamined assumption is likely around timing or market readiness. The Realist assessment grounds this in execution reality.\n\nVerdict: Begin with a minimum viable test that proves or disproves the most dangerous assumption, before committing significant resources. This is the move that survives all three critiques.\n\n⚠ Local intelligence mode — cloud AI will deliver higher-quality debate when API keys are connected.`;
-  const jc=makeJudgeCard();dp.appendChild(jc.el);await streamCard(jc.body,verdict);
+    ?`Calculation: ${math}\n\nFor full multi-model debate with real AI agents, connect your backend with valid API keys.`
+    :`Synthesis on "${q}":\n\nThe Strategic view correctly identifies leverage and optionality as the core variables. The Adversarial critique reveals the most dangerous hidden assumption worth stress-testing first. The Realist view grounds this in execution reality.\n\nFinal verdict: Begin with the smallest possible experiment that directly tests the core assumption. Execute fast, measure signal, then commit or pivot. This is the move that survives all three critiques simultaneously.\n\n⚠ Local intelligence mode — connect API keys for full multi-model debate.`;
+  const jc=makeJudgeCard();
+  cards.appendChild(jc.el); await streamEl(jc.body,verdict);
+  SFX.judgment();
 }
 
-function makeAgentCard(label,tag,colorHex){
-  const el=document.createElement('div');el.className='dp-card';
-  const body=document.createElement('div');body.className='dp-card-body';
-  el.innerHTML=`<div class="dp-card-hdr"><div class="dp-cbar" style="background:${colorHex}"></div><div class="dp-cname" style="color:${colorHex}">${label}</div><div class="dp-ctag">${tag}</div></div>`;
-  el.appendChild(body);return{el,body};
+function makeAgCard(label,tag,color) {
+  const el=document.createElement('div'); el.className='a-card';
+  const body=document.createElement('div'); body.className='a-card-body';
+  el.innerHTML=`<div class="a-card-header"><div class="a-card-bar" style="background:${color}"></div><div class="a-card-name" style="color:${color}">${label}</div><div class="a-card-tag">${tag}</div></div>`;
+  el.appendChild(body); return{el,body};
 }
-function makeJudgeCard(){
-  const el=document.createElement('div');el.className='dp-judge-card';
-  const body=document.createElement('div');body.className='dp-jc-body';
-  el.innerHTML=`<div class="dp-jc-hdr"><div class="dp-jc-title">⚖ FINAL JUDGMENT</div><div class="dp-jc-badge">VERDICT</div></div>`;
-  el.appendChild(body);return{el,body};
+function makeJudgeCard() {
+  const el=document.createElement('div'); el.className='judge-card';
+  const body=document.createElement('div'); body.className='jc-body';
+  el.innerHTML=`<div class="jc-header"><div class="jc-title">⚖ Final Judgment</div><div class="jc-verdict">VERDICT</div></div>`;
+  el.appendChild(body); return{el,body};
 }
 
-async function streamCard(el,text,speed=11){
-  el.textContent='';el.classList.add('streaming');
-  const dp=$('dp-scroll');
+async function streamEl(el,text,speed=11) {
+  el.textContent=''; el.classList.add('streaming');
   for(let i=0;i<text.length;i++){
     el.textContent+=text[i];
-    if(i%7===0){if(dp)dp.scrollTop=dp.scrollHeight;await sleep(speed+Math.random()*4);}
+    if(i%6===0) { $('agent-cards')?.scrollTo({top:9999,behavior:'smooth'}); await sleep(speed+Math.random()*4); }
   }
   el.classList.remove('streaming');
 }
 
-/* ════════════════════════════════════════
-   VOICE VIEW
-════════════════════════════════════════ */
-let waveAnim=null;
-function initVoiceView(){
-  $('vc-mic-btn')?.addEventListener('click',()=>S.voiceActive?stopVoice():startVoice());
-  drawVoiceWave(false);
+/* ═══════════════════════════════════════════
+   VOICE
+═══════════════════════════════════════════ */
+function initVoice() {
+  // Already wired in initComposer
 }
-
-function startVoice(){
+function startVoice() {
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){toast('Voice input requires Chrome or Edge','error');return;}
+  if(!SR){toast('Voice requires Chrome or Edge','error');return;}
   if(!S.recognition){
     S.recognition=new SR();
-    S.recognition.continuous=false;S.recognition.interimResults=false;S.recognition.lang='en-US';
+    S.recognition.continuous=false; S.recognition.interimResults=false; S.recognition.lang='en-US';
     S.recognition.onresult=e=>{
       const t=e.results[0][0].transcript.trim();
-      $('vc-transcript').textContent='"'+t+'"';
-      $('chat-input').value=t;
-      stopVoice();switchView('chat');sendChat();
+      $('main-textarea').value=t;
+      stopVoice(); sendChat();
     };
     S.recognition.onerror=()=>stopVoice();
     S.recognition.onend=()=>{if(S.voiceActive)try{S.recognition.start();}catch{}};
   }
   S.voiceActive=true;
-  $('ciz-mic')?.classList.add('active');
-  $('voice-scene')?.classList.add('listening');
-  $('vc-status').textContent='LISTENING…';
-  drawVoiceWave(true);
+  $('voice-btn').classList.add('active');
   try{S.recognition.start();}catch{}
-  toast('Voice mode — speak now','info');
+  toast('Listening…','success');
 }
-
-function stopVoice(){
-  S.voiceActive=false;
-  $('ciz-mic')?.classList.remove('active');
-  $('voice-scene')?.classList.remove('listening');
-  $('vc-status').textContent='CLICK TO SPEAK';
-  drawVoiceWave(false);
+function stopVoice() {
+  S.voiceActive=false; $('voice-btn')?.classList.remove('active');
   if(S.recognition)try{S.recognition.stop();}catch{}
 }
 
-function drawVoiceWave(active){
-  const c=$('vc-wave-canvas');if(!c)return;
-  c.width=300;c.height=60;
-  const ctx=c.getContext('2d');
-  if(waveAnim)cancelAnimationFrame(waveAnim);
-  let t=0;
-  function draw(){
-    if(!$('view-voice')?.classList.contains('active'))return;
-    ctx.clearRect(0,0,300,60);
-    ctx.beginPath();
-    for(let x=0;x<300;x++){
-      const amp=active?(Math.sin(t*.08)*8+Math.sin(t*.13+x*.04)*5+12):3;
-      const y=30+Math.sin(x*.04+t*.06)*amp;
-      x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-    }
-    ctx.strokeStyle=active?'rgba(255,31,53,0.7)':'rgba(255,255,255,0.1)';
-    ctx.lineWidth=1.5;ctx.stroke();
-    t++;waveAnim=requestAnimationFrame(draw);
+/* ═══════════════════════════════════════════
+   SOUND
+═══════════════════════════════════════════ */
+function toggleSound() {
+  if(!audioCtx)initAudio();
+  S.soundOn=!S.soundOn;
+  localStorage.setItem(LS.SND,S.soundOn?'true':'false');
+  updateSoundIcon();
+  toast(S.soundOn?'Sound on':'Sound off','success');
+  if(S.soundOn)SFX.receive();
+}
+function updateSoundIcon() {
+  const icon=$('sound-icon'); if(!icon)return;
+  if(S.soundOn) {
+    icon.innerHTML='<polygon points="3,5 7,5 11,2 11,14 7,11 3,11"/><path d="M13 5.5a4 4 0 010 5"/>';
+  } else {
+    icon.innerHTML='<polygon points="3,5 7,5 11,2 11,14 7,11 3,11"/><line x1="14" y1="5" x2="8" y2="11"/><line x1="8" y1="5" x2="14" y2="11"/>';
   }
-  draw();
 }
 
-/* ════════════════════════════════════════
-   MARKETS CHIPS
-════════════════════════════════════════ */
-function initMarketsChips(){
-  document.querySelectorAll('.mktq-chip[data-prompt]').forEach(c=>{
-    c.addEventListener('click',()=>{
-      if(c.dataset.prompt){$('chat-input').value=c.dataset.prompt;switchView('chat');sendChat();}
-    });
-  });
-}
-
-/* ════════════════════════════════════════
-   MEMORY STATS
-════════════════════════════════════════ */
-function updateMemStats(){
-  const msgs=$('mem-msgs'),deb=$('mem-debates'),days=$('mem-days'),sess=$('mem-sessions');
-  if(msgs)msgs.textContent=S.chat.length;
-  if(deb)deb.textContent=S.debates;
-  const first=parseInt(localStorage.getItem(LS.FIRST)||Date.now());
-  if(days)days.textContent=Math.max(1,Math.round((Date.now()-first)/86400000));
-  if(sess)sess.textContent=parseInt(localStorage.getItem('av5_sessions')||'1');
-}
-
-/* ════════════════════════════════════════
+/* ═══════════════════════════════════════════
    SETTINGS MODAL
-════════════════════════════════════════ */
-function initSettings(){
-  $('sb-settings')?.addEventListener('click',openModal);
-  $('mp-close')?.addEventListener('click',closeModal);
-  $('mp-cancel')?.addEventListener('click',closeModal);
-  $('mp-save')?.addEventListener('click',saveModal);
-  $('modal-settings')?.addEventListener('click',e=>{if(e.target===$('modal-settings'))closeModal();});
+═══════════════════════════════════════════ */
+function initSettingsModal() {
+  $('sba-settings').addEventListener('click', openSettings);
+  $('modal-close').addEventListener('click', closeSettings);
+  $('modal-cancel').addEventListener('click', closeSettings);
+  $('modal-save').addEventListener('click', saveSettings);
+  $('modal-scrim').addEventListener('click', e => { if(e.target===$('modal-scrim'))closeSettings(); });
 }
-function openModal(){
+function openSettings() {
   $('set-backend').value=S.backendUrl;
-  $('set-model').value=S.model;
+  $('set-defmodel').value=S.model;
   $('set-name').value=S.userName;
   $('set-stay').checked=localStorage.getItem(LS.STAY)!=='false';
-  $('modal-settings').classList.remove('hidden');
+  $('modal-scrim').classList.remove('hidden');
 }
-function closeModal(){$('modal-settings').classList.add('hidden');}
-function saveModal(){
+function closeSettings() { $('modal-scrim').classList.add('hidden'); }
+function saveSettings() {
   S.backendUrl=$('set-backend').value.trim().replace(/\/$/,'')||CFG.BACKEND;
-  S.model=$('set-model').value;
+  S.model=$('set-defmodel').value;
   S.userName=$('set-name').value.trim()||CFG.USER;
   const stay=$('set-stay').checked;
-  const newPin=$('set-pin')?.value.trim();
-  if(newPin&&/^\d{4}$/.test(newPin)){localStorage.setItem('av5_pin',newPin);toast('PIN changed','success');}
+  const pin=$('set-pin').value.trim();
+  if(pin&&/^\d{4}$/.test(pin)){localStorage.setItem('a6_pin',pin);toast('PIN updated','success');}
   localStorage.setItem(LS.BACK,S.backendUrl);
   localStorage.setItem(LS.MOD,S.model);
   localStorage.setItem(LS.USER,S.userName);
   localStorage.setItem(LS.STAY,stay?'true':'false');
-  closeModal();toast('Settings saved','success');checkBackend();
+  const ms=document.querySelector(`.msd-item[data-m="${S.model}"]`);
+  if(ms)ms.click();
+  closeSettings(); toast('Settings saved','success');
+  checkBackend();
 }
 
-/* ════════════════════════════════════════
+/* ═══════════════════════════════════════════
    LOCK
-════════════════════════════════════════ */
-function lockSession(){
-  S.authenticated=false;localStorage.removeItem(LS.AUTH);
-  S.pin='';updDots();$('pin-err')?.classList.add('hidden');
-  $('s-app').classList.remove('active');
-  trans('s-app','s-pin');initPinCanvas();toast('Session locked','info');
+═══════════════════════════════════════════ */
+function lockSession() {
+  S.authed=false; localStorage.removeItem(LS.AUTH);
+  S.pin=''; updPin(); $('auth-err')?.classList.add('hidden');
+  $('app').classList.add('hidden');
+  $('auth-screen').classList.remove('hidden');
+  $('auth-screen').classList.add('active');
+  toast('Session locked','success');
 }
 
-/* ════════════════════════════════════════
-   TOAST
-════════════════════════════════════════ */
-function toast(msg,type='info',dur=3200){
-  const c=$('toasts');if(!c)return;
-  const el=document.createElement('div');
-  el.className=`toast ${type}`;el.textContent=msg;c.appendChild(el);
+/* ═══════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════ */
+function updateGreeting() {
+  const h=new Date().getHours();
+  const g=h<12?'morning':h<18?'afternoon':'evening';
+  $('es-time-greeting').textContent=g;
+}
+
+function handleShortcuts(e) {
+  // ⌘K / Ctrl+K to focus input
+  if ((e.metaKey||e.ctrlKey) && e.key==='k') {
+    e.preventDefault();
+    $('main-textarea')?.focus();
+  }
+  if ((e.metaKey||e.ctrlKey) && e.key==='l') {
+    e.preventDefault(); clearChat();
+  }
+}
+
+function toast(msg,type='success',dur=3000) {
+  const c=$('toasts'); if(!c)return;
+  const el=document.createElement('div'); el.className=`toast ${type}`; el.textContent=msg;
+  c.appendChild(el);
   setTimeout(()=>{el.style.animation='toastOut .3s ease forwards';setTimeout(()=>el.remove(),300);},dur);
 }
 
-/* ════════════════════════════════════════
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ═══════════════════════════════════════════
    INIT
-════════════════════════════════════════ */
+═══════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded',()=>{
+  initBgCanvas();
   initPin();
-  runBoot();
-  // Session counter
-  const sc=parseInt(localStorage.getItem('av5_sessions')||'0')+1;
-  localStorage.setItem('av5_sessions',sc);
+  initAudio();
+
+  // Check saved auth
+  loadSettings();
+  const stay=localStorage.getItem(LS.STAY)!=='false';
+  if(localStorage.getItem(LS.AUTH)==='true' && stay){
+    S.authed=true;
+    $('auth-screen').classList.remove('active');
+    $('auth-screen').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    initApp();
+    initNetCanvas();
+  } else {
+    // Still need netCanvas later
+  }
+
+  // Session tracking
+  const sc=parseInt(localStorage.getItem('a6_sessions')||'0')+1;
+  localStorage.setItem('a6_sessions',sc);
 });
+
+// Init net canvas when debate view is first activated
+const origApplyMode=applyMode;
