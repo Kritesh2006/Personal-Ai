@@ -9,7 +9,7 @@
    CONFIG
 ═══════════════════════════════════════════ */
 const CFG = {
-  PIN:     '0002',
+  PIN:     '2331',
   BACKEND: 'http://localhost:3000',
   USER:    'Mr. Kritesh',
 };
