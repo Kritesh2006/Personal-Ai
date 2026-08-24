@@ -1,5 +1,5 @@
 /*
-  ARIA v6 — script.js
+  ARIA v6 , script.js
   © Kritesh Dhungel 2025. All rights reserved.
   Unauthorized redistribution prohibited.
 */
@@ -52,7 +52,7 @@ const $  = id  => document.getElementById(id);
 const $$ = sel => document.querySelector(sel);
 
 /* ═══════════════════════════════════════════
-   SOUND SYSTEM (Web Audio API — no files)
+   SOUND SYSTEM (Web Audio API , no files)
 ═══════════════════════════════════════════ */
 let audioCtx = null;
 function initAudio() {
@@ -126,11 +126,11 @@ const FB = {
     const h  = new Date().getHours();
     const p  = h<12?'morning':h<18?'afternoon':'evening';
     if (/^(hi|hey|hello|howdy|yo)\b/i.test(lo))
-      return `Good ${p}, ${S.userName}. ARIA is running in local intelligence mode — cloud AI is currently unavailable. I can still handle math, conversions, web commands, and strategic frameworks. What do you need?`;
+      return `Good ${p}, ${S.userName}. ARIA is running in local intelligence mode , cloud AI is currently unavailable. I can still handle math, conversions, web commands, and strategic frameworks. What do you need?`;
     if (/how are you/i.test(lo)) return 'Systems operational. Running local intelligence mode. What can I reason through for you?';
     if (/what can you do|help/i.test(lo))
       return `**Local Intelligence Mode active.** I can:\n• Math & calculations: "50% of 200", "100 * 3.14"\n• Unit conversions: °C↔°F, km↔miles\n• Web commands: "open YouTube", "search Google for X"\n• Time & date\n• Strategic frameworks & reasoning\n\nConnect your backend + API keys for full multi-model AI intelligence.`;
-    return `I'm in local intelligence mode — cloud AI temporarily unavailable.\n\nTry: math ("100 * 1.08"), conversions ("20°C to F"), or "open GitHub".\n\nFor full AI reasoning, connect your backend with valid API keys.`;
+    return `I'm in local intelligence mode , cloud AI temporarily unavailable.\n\nTry: math ("100 * 1.08"), conversions ("20°C to F"), or "open GitHub".\n\nFor full AI reasoning, connect your backend with valid API keys.`;
   },
   handle(t) {
     const c = this.cmd(t);   if (c !== null) return c;
@@ -489,10 +489,10 @@ function handleApiErr(err, orig) {
   setStatusChip('offline', err.type==='rate_limit' ? 'Limit' : 'Offline');
   setSbDot(false);
   const msg = err.type==='rate_limit'
-    ? `Cloud AI limit reached — switching to local mode.\n\n${FB.handle(orig)}`
+    ? `Claude AI limit reached , switching to local mode.\n\n${FB.handle(orig)}`
     : err.type==='auth'
-    ? `API key issue — check your .env file.\n\n${FB.handle(orig)}`
-    : `Connection lost — local mode active.\n\n${FB.handle(orig)}`;
+    ? `API key issue , check your .env file.\n\n${FB.handle(orig)}`
+    : `Connection lost , local mode active.\n\n${FB.handle(orig)}`;
   addMsg('aria', msg, null, 'fallback');
   SFX.error();
 }
@@ -820,7 +820,7 @@ async function sendDebate() {
     for(const ag of agentCfg) {
       const text=result[ag.key]; if(!text)continue;
       setNNState(ag.id,'done');
-      setTicker(`${ag.label} responded — forwarding to Judge…`,'active');
+      setTicker(`${ag.label} responded , forwarding to Judge…`,'active');
       spawnEP(ag.id,'judge',NCOLORS[ag.id]);
       const card=makeAgCard(ag.label,ag.tag,ag.color);
       cards.appendChild(card.el); await streamEl(card.body,text); await sleep(100);
@@ -848,11 +848,11 @@ async function sendDebate() {
 async function runLocalDebate(q,cards) {
   const agents=[
     {label:'STRATEGIC ANALYSIS',tag:'Local Intel',color:'#f59e0b',
-      text:`Strategic view on "${q}":\n\nThe key leverage point is identifying which single variable produces the highest compounding return. Map all paths — which are reversible vs. irreversible? The bold move: commit resources only after a minimum viable test proves the core assumption. Asymmetric bets — low downside, high upside — should always be explored first.`},
+      text:`Strategic view on "${q}":\n\nThe key leverage point is identifying which single variable produces the highest compounding return. Map all paths , which are reversible vs. irreversible? The bold move: commit resources only after a minimum viable test proves the core assumption. Asymmetric bets , low downside, high upside , should always be explored first.`},
     {label:'ADVERSARIAL CRITIQUE',tag:'Local Intel',color:'#3b82f6',
       text:`Critical challenge on "${q}":\n\nThe hidden assumption most likely to break this thesis: that the market timing is correct, or that the core capability assumption holds. Most strategic failures come not from poor execution but from an unquestioned foundational belief that turned out to be wrong. What's the one question you're most afraid to pressure-test?`},
     {label:'REALIST ASSESSMENT',tag:'Local Intel',color:'#a855f7',
-      text:`Ground reality on "${q}":\n\nExecution is where ideas die. What does this actually require — timeline, capital, and capability? The execution discount rule: plans take 2–3× longer and cost 2–3× more than projected. Where do 80% of attempts at this specific challenge fail? That's where to focus first.`},
+      text:`Ground reality on "${q}":\n\nExecution is where ideas die. What does this actually require , timeline, capital, and capability? The execution discount rule: plans take 2–3× longer and cost 2–3× more than projected. Where do 80% of attempts at this specific challenge fail? That's where to focus first.`},
   ];
   for(const ag of agents){
     setNNState('gpt','done'); setNNState('claude','done');
@@ -870,7 +870,7 @@ async function runLocalDebate(q,cards) {
   const math=FB.math(q);
   const verdict=math
     ?`Calculation: ${math}\n\nFor full multi-model debate with real AI agents, connect your backend with valid API keys.`
-    :`Synthesis on "${q}":\n\nThe Strategic view correctly identifies leverage and optionality as the core variables. The Adversarial critique reveals the most dangerous hidden assumption worth stress-testing first. The Realist view grounds this in execution reality.\n\nFinal verdict: Begin with the smallest possible experiment that directly tests the core assumption. Execute fast, measure signal, then commit or pivot. This is the move that survives all three critiques simultaneously.\n\n⚠ Local intelligence mode — connect API keys for full multi-model debate.`;
+    :`Synthesis on "${q}":\n\nThe Strategic view correctly identifies leverage and optionality as the core variables. The Adversarial critique reveals the most dangerous hidden assumption worth stress-testing first. The Realist view grounds this in execution reality.\n\nFinal verdict: Begin with the smallest possible experiment that directly tests the core assumption. Execute fast, measure signal, then commit or pivot. This is the move that survives all three critiques simultaneously.\n\n⚠ Local intelligence mode , connect API keys for full multi-model debate.`;
   const jc=makeJudgeCard();
   cards.appendChild(jc.el); await streamEl(jc.body,verdict);
   SFX.judgment();
